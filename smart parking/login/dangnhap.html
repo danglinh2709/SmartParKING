@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SMART PARKING - Login</title>
+    <link rel="stylesheet" href="./dangnhap.css" />
+  </head>
+  <body>
+    <header>
+      <div class="logo">
+        <a href="/smart parking/trangchu/index.html"
+          ><span class="orange">SMART</span><span class="blue">PARKING</span></a
+        >
+      </div>
+
+      <!--  -->
+      <nav>
+        <ul>
+          <li>
+            <a href="/smart parking/introduce/index.html">INTRODUCTION</a>
+          </li>
+
+          <li class="dropdown">
+            <a href="/smart parking/products/product.html">PRODUCTS</a>
+            <i
+              class="fas fa-chevron-down"
+              style="font-size: 12px; color: black"
+            ></i>
+            <div class="dropdown-content">
+              <a href="/smart parking/products/goicoban/goicoban.html"
+                >Smart Parking Basic Package</a
+              >
+              <a href="/smart parking/products/goinangcao/goinangcao.html "
+                >Smart Parking Advanced Package</a
+              >
+              <a href="/smart parking/products/goithue/goithue.html"
+                >SmartParking Rental Package</a
+              >
+            </div>
+          </li>
+
+          <li class="dropdown">
+            <a href="/smart parking/solutions/giaiphap.html">SOLUTIONS</a>
+            <i class="fas fa-chevron-down" style="font-size: 12px"></i>
+            <div class="dropdown-content">
+              <a href="/smart parking/solutions/MagneticCard/MagneticCard.html"
+                >Magnetic Card Parking Solutions</a
+              >
+              <a href="/smart parking/solutions/apatment/apartment.html"
+                >Apartment Parking Solutions</a
+              >
+              <a href="/smart parking/solutions/commercial/commercial.html"
+                >Commercial Parking Solutions</a
+              >
+              <a href="/smart parking/solutions/parking/parking.html"
+                >Parking Guidance Solutions</a
+              >
+              <!--  -->
+              <a href="/smart parking/solutions/SmartVehicle/SmartVehicle.html"
+                >Smart Vehicle Lifting Solutions</a
+              >
+              <a
+                href="/smart parking/solutions/VehicleAccess/VehicleAccess.html"
+                >Vehicle Entry and Exit Control Solutions</a
+              >
+              <a href="/smart parking/solutions/factory/factory.html"
+                >Factory Parking Solutions</a
+              >
+              <a href="/smart parking/solutions/hotel/hotel.html"
+                >Hotel Parking Management Solutions</a
+              >
+              <!--  -->
+              <a href="/smart parking/solutions/vuichoi/vuichoi.html"
+                >Playground Control Solutions</a
+              >
+              <a href="/smart parking/solutions/school/school.html"
+                >School Parking Solutions</a
+              >
+              <a href="/smart parking/solutions/hospital/hospital.html"
+                >Hospital Parking Solutions</a
+              >
+              <a href="/smart parking/solutions/bus/bus.html"
+                >Bus Station Parking Solutions</a
+              >
+            </div>
+          </li>
+          <li>
+            <a href="/smart parking/contactus/contactus.html">CONTACT US</a>
+          </li>
+          <li><a href="/smart parking/pay/pay.html">RESERVATION AND PAY</a></li>
+          <li class="login-button">
+            <a href="/smart parking/login/dangnhap.html">LOGIN</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div
+      class="anh"
+      style="margin-top: 30%; width: 100%; height: 100%; position: relative"
+    >
+      <img
+        src="/smart parking/ảnh/phai-xem-xet-ky-nhung-thong-tin-cua-dia-chi-cong-ty.jpg"
+        alt=""
+        style="
+          width: 100%;
+          height: 100%;
+          filter: blur(3px);
+          box-shadow: 0 12px 14px rgba(0, 0, 0, 0.1);
+        "
+      />
+    </div>
+    <div
+      class="container"
+      style="margin-top: 100px; position: absolute"
+      id="login-form"
+    >
+      <h2>SMART PARKING</h2>
+      <input
+        type="text"
+        id="login-email"
+        placeholder="Email hoặc số điện thoại"
+      />
+      <input type="password" id="login-password" placeholder="Mật khẩu" />
+      <button class="btn btn-login" onclick="login()">Log in</button>
+      <p>
+        <a href="#">Forgot password? <br /> </a>
+      </p>
+      <hr />
+      <button class="btn btn-register" onclick="showRegisterForm()">
+        Register
+      </button>
+    </div>
+
+    <div class="container hidden" id="register-form">
+      <h2>Register</h2>
+      <input type="text" id="register-name" placeholder="Full name" />
+      <input type="email" id="register-email" placeholder="Email" />
+      <input type="password" id="register-password" placeholder="Password" />
+      <input type="file" id="register-avatar" accept="image/*" />
+      <p style="display: inline"></p>
+      <button class="btn btn-register" onclick="register()">Register</button>
+      <p><a href="#" onclick="showLoginForm()">Return</a></p>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-container">
+        <!-- Cột trái -->
+        <div class="footer-column">
+          <p class="h1">
+            <span class="orange">SMART</span><span class="white">PARKING</span>
+          </p>
+          <p>
+            Smart parking management system helps manage parking lots quickly,
+            accurately, safely and economically.
+          </p>
+          <div class="social-icons">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+
+        <!-- Cột giữa -->
+        <div class="footer-column">
+          <h2>Management Company</h2>
+          <p><strong>LTT Solution Joint Stock Company</strong></p>
+          <p>
+            <i class="fas fa-map-marker-alt"></i> No. 235 Hoang Quoc Viet, Co
+            Nhue, Hanoi
+          </p>
+          <p><i class="fas fa-phone-alt"></i> 0375424626</p>
+          <p><i class="fas fa-envelope"></i> info@smartparking.vn</p>
+        </div>
+
+        <!-- Cột phải -->
+        <div class="footer-column">
+          <h2>Categories</h2>
+          <ul>
+            <li>
+              <a href="/smart parking/introduce/index.html">Introduction</a>
+            </li>
+            <li>
+              <a href="/smart parking/solutions/giaiphap.html">Solutions</a>
+            </li>
+            <li>
+              <a href="/smart parking/contactus/contactus.html">Contact</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p>© 2025 • www.smartparking.vn</p>
+        <a href="/smart parking/trangchu/index.html" class="back-to-top"
+          >Back to top</a
+        >
+      </div>
+    </footer>
+
+    <!--  -->
+
+    <script>
+      function showRegisterForm() {
+        document.getElementById("login-form").classList.add("hidden");
+        document.getElementById("register-form").classList.remove("hidden");
+      }
+
+      function showLoginForm() {
+        document.getElementById("register-form").classList.add("hidden");
+        document.getElementById("login-form").classList.remove("hidden");
+      }
+
+      function register() {
+        let name = document.getElementById("register-name").value;
+        let email = document.getElementById("register-email").value;
+        let password = document.getElementById("register-password").value;
+        let avatarInput = document.getElementById("register-avatar");
+
+        if (name === "" || email === "" || password === "") {
+          alert("Vui lòng điền đầy đủ thông tin!");
+          return;
+        }
+
+        let reader = new FileReader();
+        reader.onload = function (e) {
+          let userData = { name, email, password, avatar: e.target.result };
+          localStorage.setItem(email, JSON.stringify(userData));
+          alert("Đăng ký thành công! Vui lòng đăng nhập.");
+          showLoginForm();
+        };
+
+        if (avatarInput.files.length > 0) {
+          reader.readAsDataURL(avatarInput.files[0]);
+        } else {
+          let userData = { name, email, password, avatar: "" };
+          localStorage.setItem(email, JSON.stringify(userData));
+          alert("Đăng ký thành công! Vui lòng đăng nhập.");
+          showLoginForm();
+        }
+      }
+
+      function login() {
+        let email = document.getElementById("login-email").value;
+        let password = document.getElementById("login-password").value;
+
+        let userData = localStorage.getItem(email);
+        if (!userData) {
+          alert("Tài khoản không tồn tại!");
+          return;
+        }
+
+        let user = JSON.parse(userData);
+        if (user.password === password) {
+          localStorage.setItem("currentUser", JSON.stringify(user));
+          window.location.href = "/smart parking/login/quanly.html";
+        } else {
+          alert("Sai mật khẩu!");
+        }
+      }
+    </script>
+  </body>
+</html>
