@@ -1,293 +1,217 @@
-// function updateTime() {
-//   const now = new Date();
-//   const formattedTime = now.toLocaleString("vi-VN", {
-//     timeZone: "Asia/Ho_Chi_Minh",
-//   });
-//   document.getElementById(
-//     "current-time"
-//   ).innerText = `⏰ Thời gian hiện tại: ${formattedTime}`;
-// }
+/* ====================== GUARD ====================== */
+(function () {
+  document.addEventListener("DOMContentLoaded", () => {
+    const token = localStorage.getItem("sp_token");
 
-// // Cập nhật thời gian ngay khi tải trang
-// updateTime();
+    if (!token) {
+      alert("Vui lòng đăng nhập trước!");
+      location.href = "dangnhap.html";
+    }
+  });
+})();
 
-// // Cập nhật mỗi giây
-// setInterval(updateTime, 1000);
+/* ====================== UTIL ====================== */
+const API = "http://localhost:5000/api/parking";
+const PARKING_LOT_ID_DEFAULT = 11; // <— chỉnh id bãi của bạn
 
-// document.addEventListener("DOMContentLoaded", function () {
-//   let currentLane = "vao";
-//   let step = 0;
-//   let capturedImages = { truoc: null, sau: null };
-
-//   const video = document.getElementById("webcam");
-//   const canvas = document.getElementById("snapshot");
-//   const context = canvas.getContext("2d");
-//   const captureButton = document.getElementById("capture");
-//   const switchLaneButton = document.getElementById("switch-lane");
-
-//   const bienSoEl = document.getElementById("bienSo");
-//   const thoiGianVaoEl = document.getElementById("thoiGianVao");
-//   const thoiGianRaEl = document.getElementById("thoiGianRa");
-//   const soTienEl = document.getElementById("soTien");
-
-//   const imgBienso = {
-//     vao: {
-//       truoc: document.getElementById("bienso_truoc_vao"),
-//       sau: document.getElementById("bienso_sau_vao"),
-//     },
-//     ra: {
-//       truoc: document.getElementById("bienso_truoc_ra"),
-//       sau: document.getElementById("bienso_sau_ra"),
-//     },
-//   };
-
-//   let vehicleCounts = {
-//     car: { available: 300, parked: 0 },
-//     motorbike: { available: 250, parked: 0 },
-//     bike: { available: 100, parked: 0 },
-//   };
-
-//   function updateVehicleCount() {
-//     document.getElementById("car-count").textContent =
-//       vehicleCounts.car.available;
-//     document.getElementById("motorbike-count").textContent =
-//       vehicleCounts.motorbike.available;
-//     document.getElementById("bike-count").textContent =
-//       vehicleCounts.bike.available;
-
-//     document.getElementById("car-count-exit").textContent =
-//       vehicleCounts.car.parked;
-//     document.getElementById("motorbike-count-exit").textContent =
-//       vehicleCounts.motorbike.parked;
-//     document.getElementById("bike-count-exit").textContent =
-//       vehicleCounts.bike.parked;
-//   }
-
-//   function vehicleEnter(type) {
-//     if (vehicleCounts[type].available > 0) {
-//       vehicleCounts[type].available--;
-//       vehicleCounts[type].parked++;
-//       updateVehicleCount();
-//       alert(`🚗 Xe ${type} đã vào.`);
-//     } else {
-//       alert(`❌ Bãi đã đầy, không còn chỗ cho xe ${type}.`);
-//     }
-//   }
-
-//   function vehicleExit(type) {
-//     if (vehicleCounts[type].parked > 0) {
-//       vehicleCounts[type].available++;
-//       vehicleCounts[type].parked--;
-//       updateVehicleCount();
-//       alert(`🚗 Xe ${type} đã rời khỏi.`);
-//     } else {
-//       alert(`❌ Không có xe ${type} trong bãi.`);
-//     }
-//   }
-
-//   function switchLane() {
-//     currentLane = currentLane === "vao" ? "ra" : "vao";
-//     capturedImages = { truoc: null, sau: null };
-//     alert(`🔄 Đã chuyển sang làn xe ${currentLane === "vao" ? "vào" : "ra"}!`);
-//   }
-
-//   async function startWebcam() {
-//     try {
-//       const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-//       video.srcObject = stream;
-//     } catch (error) {
-//       console.error("Lỗi webcam:", error);
-//     }
-//   }
-
-//   function saveImage(imageData, fileName) {
-//     const link = document.createElement("a");
-//     link.href = imageData;
-//     link.download = fileName;
-//     document.body.appendChild(link);
-//     link.click();
-//     document.body.removeChild(link);
-//   }
-
-//   function getCurrentTime() {
-//     return new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
-//   }
-
-//   captureButton.addEventListener("click", async () => {
-//     const targetWidth = 640;
-//     const targetHeight = video.videoHeight * (targetWidth / video.videoWidth);
-//     canvas.width = targetWidth;
-//     canvas.height = targetHeight;
-
-//     // Resize ảnh và giảm chất lượng xuống 0.6
-//     context.drawImage(video, 0, 0, canvas.width, canvas.height);
-//     const imageData = canvas.toDataURL("image/jpeg", 0.6);
-
-//     // Hiển thị ảnh
-//     imgBienso[currentLane].truoc.src = imageData;
-//     imgBienso[currentLane].sau.src = imageData;
-
-//     const licensePlate = prompt("Nhập biển số xe:");
-//     if (!licensePlate) return alert("❌ Chưa nhập biển số!");
-
-//     const API_URL = "http://localhost:5000/api/parking";
-
-//     try {
-//       const url = currentLane === "vao" ? "/in" : "/out";
-//       const res = await fetch(API_URL + url, {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({
-//           licensePlate,
-//           parkingLotId: 1, // chỉ dùng khi xe vào
-//           imageUrlEntry: currentLane === "vao" ? imageData : undefined,
-//           imageUrlExit: currentLane === "ra" ? imageData : undefined,
-//         }),
-//       });
-
-//       if (!res.ok) throw new Error(await res.text());
-//       const data = await res.json();
-
-//       if (currentLane === "vao") {
-//         alert("✅ Xe đã vào bãi");
-//         thoiGianVaoEl.textContent = getCurrentTime();
-//         thoiGianRaEl.textContent = "---";
-//         soTienEl.textContent = "---";
-//       } else {
-//         alert("✅ Xe đã rời bãi");
-//         thoiGianRaEl.textContent = getCurrentTime();
-//         soTienEl.textContent = Math.max(0, data.fee || 0);
-//       }
-
-//       bienSoEl.textContent = licensePlate;
-//     } catch (err) {
-//       console.error(err);
-//       alert("Lỗi gửi dữ liệu");
-//     }
-//   });
-
-//   switchLaneButton.addEventListener("click", switchLane);
-
-//   startWebcam();
-//   updateVehicleCount();
-// });
-
-function updateTime() {
-  const now = new Date();
-  const formattedTime = now.toLocaleString("vi-VN", {
+const $ = (q, ctx = document) => ctx.querySelector(q);
+const $$ = (q, ctx = document) => Array.from(ctx.querySelectorAll(q));
+function nowVN() {
+  return new Date().toLocaleString("vi-VN", {
     timeZone: "Asia/Ho_Chi_Minh",
   });
-  document.getElementById(
-    "current-time"
-  ).innerText = `⏰ Thời gian hiện tại: ${formattedTime}`;
+}
+function fmtVN(d) {
+  try {
+    return new Date(d).toLocaleString("vi-VN", {
+      timeZone: "Asia/Ho_Chi_Minh",
+    });
+  } catch {
+    return "---";
+  }
+}
+function toast(msg, ok = true) {
+  const t = $("#toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.style.display = "block";
+  t.style.borderColor = ok ? "#0ea66a" : "#ef4444";
+  t.style.background = ok ? "#052e24" : "#3f1f1f";
+  clearTimeout(t._h);
+  t._h = setTimeout(() => (t.style.display = "none"), 3000);
 }
 
-// Cập nhật thời gian ngay khi tải trang
-updateTime();
-// Cập nhật mỗi giây
-setInterval(updateTime, 1000);
+/* ====================== HEADER TIME ====================== */
+function renderTime() {
+  $("#current-time").textContent = "⏰ Thời gian hiện tại: " + nowVN();
+}
+renderTime();
+setInterval(renderTime, 1000);
 
-document.addEventListener("DOMContentLoaded", function () {
-  let currentLane = "vao";
-  let vehicleCounts = {
-    car: { available: 300, parked: 0 },
-    motorbike: { available: 250, parked: 0 },
-    bike: { available: 100, parked: 0 },
-  };
+/* ====================== EMPLOYEE NAME ====================== */
+(function () {
+  try {
+    const p = JSON.parse(localStorage.getItem("sp_profile") || "{}");
+    if (p?.name) $("#employee-name").textContent = p.name;
+  } catch {}
+})();
 
-  const video = document.getElementById("webcam");
-  const canvas = document.getElementById("snapshot");
-  const context = canvas.getContext("2d");
-  const captureButton = document.getElementById("capture");
-  const switchLaneButton = document.getElementById("switch-lane");
+/* ====================== LOGOUT ====================== */
+$("#logoutBtn")?.addEventListener("click", () => {
+  localStorage.removeItem("sp_token");
+  sessionStorage.removeItem("sp_token");
+  localStorage.removeItem("sp_profile");
+  alert("👋 Bạn đã đăng xuất!");
+  location.href = "dangnhap.html";
+});
 
-  const bienSoEl = document.getElementById("bienSo");
-  const thoiGianVaoEl = document.getElementById("thoiGianVao");
-  const thoiGianRaEl = document.getElementById("thoiGianRa");
-  const soTienEl = document.getElementById("soTien");
-
-  function updateVehicleCount() {
-    document.getElementById("car-count").textContent =
-      vehicleCounts.car.available;
-    document.getElementById("motorbike-count").textContent =
-      vehicleCounts.motorbike.available;
-    document.getElementById("bike-count").textContent =
-      vehicleCounts.bike.available;
-
-    document.getElementById("car-count-exit").textContent =
-      vehicleCounts.car.parked;
-    document.getElementById("motorbike-count-exit").textContent =
-      vehicleCounts.motorbike.parked;
-    document.getElementById("bike-count-exit").textContent =
-      vehicleCounts.bike.parked;
+/* ====================== WEBCAM ====================== */
+const video = $("#webcam"),
+  canvas = $("#snapshot"),
+  ctx = canvas.getContext("2d");
+async function startCam() {
+  try {
+    const s = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = s;
+  } catch (e) {
+    console.error(e);
+    alert("Không truy cập được webcam.");
   }
+}
+startCam();
 
-  function getCurrentTime() {
-    return new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" });
-  }
+/* ====================== UI STATE ====================== */
+let currentLane = "vao";
+const laneLabel = $("#laneLabel");
+const img = {
+  vao: { truoc: $("#bienso_truoc_vao"), sau: $("#bienso_sau_vao") },
+  ra: { truoc: $("#bienso_truoc_ra"), sau: $("#bienso_sau_ra") },
+};
+const bienSoEl = $("#bienSo"),
+  vaoEl = $("#thoiGianVao"),
+  raEl = $("#thoiGianRa"),
+  tienEl = $("#soTien");
 
-  function switchLane() {
-    currentLane = currentLane === "vao" ? "ra" : "vao";
-    alert(`🔄 Đã chuyển sang làn xe ${currentLane.toUpperCase()}!`);
-  }
+// đếm demo
+const counts = {
+  car: { available: 300, parked: 0 },
+  motorbike: { available: 250, parked: 0 },
+  bike: { available: 100, parked: 0 },
+};
+function renderCounts() {
+  $("#car-count").textContent = counts.car.available;
+  $("#motorbike-count").textContent = counts.motorbike.available;
+  $("#bike-count").textContent = counts.bike.available;
+  $("#car-count-exit").textContent = counts.car.parked;
+  $("#motorbike-count-exit").textContent = counts.motorbike.parked;
+  $("#bike-count-exit").textContent = counts.bike.parked;
+}
+renderCounts();
 
-  async function startWebcam() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      video.srcObject = stream;
-    } catch (error) {
-      console.error("Lỗi webcam:", error);
-    }
-  }
+// nhớ giờ vào gần nhất theo biển số (phòng khi API /out không trả entry_time)
+const lastEntryByPlate = new Map();
 
-  captureButton.addEventListener("click", async () => {
-    const licensePlate = prompt("Nhập biển số xe:");
-    if (!licensePlate || licensePlate.trim() === "")
-      return alert("❌ Chưa nhập biển số!");
+$("#switch-lane").addEventListener("click", () => {
+  currentLane = currentLane === "vao" ? "ra" : "vao";
+  laneLabel.textContent =
+    "Làn hiện tại: " + (currentLane === "vao" ? "VÀO" : "RA");
+  toast("Đã chuyển sang làn " + (currentLane === "vao" ? "VÀO" : "RA"));
+});
 
-    const API_URL = "http://localhost:5000/api/parking";
-    const bodyData =
-      currentLane === "vao"
-        ? {
-            licensePlate: licensePlate.trim(),
-            parkingLotId: 2,
-            imageUrlEntry: "dummy.jpg",
-          }
-        : { licensePlate: licensePlate.trim(), imageUrlExit: "dummy.jpg" };
+/* ====================== CAPTURE & SEND ====================== */
+$("#capture").addEventListener("click", async (e) => {
+  const btn = e.currentTarget;
 
-    try {
-      const res = await fetch(
-        API_URL + (currentLane === "vao" ? "/in" : "/out"),
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bodyData),
+  const plate = prompt("Nhập biển số xe:");
+  if (!plate || !plate.trim()) return alert("❌ Chưa nhập biển số!");
+
+  // chụp & nén ảnh
+  const w = 640,
+    h = video.videoHeight * (w / (video.videoWidth || w));
+  canvas.width = w;
+  canvas.height = h;
+  ctx.drawImage(video, 0, 0, w, h);
+  const dataURL = canvas.toDataURL("image/jpeg", 0.6);
+
+  // hiển thị demo ảnh
+  img[currentLane].truoc.src = dataURL;
+  img[currentLane].sau.src = dataURL;
+
+  const body =
+    currentLane === "vao"
+      ? {
+          licensePlate: plate.trim(),
+          parkingLotId: PARKING_LOT_ID_DEFAULT, // ✔ bãi đang chọn
+          imageUrlEntry: dataURL, // ✔ ảnh base64
         }
+      : {
+          licensePlate: plate.trim(),
+          imageUrlExit: dataURL, // ✔ ảnh base64
+        };
+
+  btn.disabled = true;
+  try {
+    const res = await fetch(API + (currentLane === "vao" ? "/in" : "/out"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      toast("❌ " + (data?.error || `${res.status} ${res.statusText}`), false);
+      return;
+    }
+
+    // server có thể trả: { ok, message, fee, exit_time, record? }
+    const record = data.record || null;
+
+    // cập nhật sidebar
+    if (currentLane === "vao") {
+      const entryTime = record?.entry_time || new Date().toISOString();
+      bienSoEl.textContent = record?.license_plate || plate.trim();
+      vaoEl.textContent = fmtVN(entryTime);
+      raEl.textContent = "---";
+      tienEl.textContent = "---";
+
+      // lưu lại để dùng khi xe ra
+      lastEntryByPlate.set(
+        (record?.license_plate || plate.trim()).toUpperCase(),
+        entryTime
       );
 
-      // Cố gắng parse JSON, nếu fail thì fallback null
-      let data = null;
-      try {
-        data = await res.json();
-      } catch {}
+      // demo đếm
+      counts.car.available = Math.max(0, counts.car.available - 1);
+      counts.car.parked += 1;
+      renderCounts();
 
-      if (!res.ok) {
-        const msg =
-          data?.error || `Backend trả về lỗi ${res.status} ${res.statusText}`;
-        alert("❌ " + msg);
-        return;
-      }
+      toast("✅ Xe đã vào bãi");
+    } else {
+      const key = (record?.license_plate || plate.trim()).toUpperCase();
+      const entryTimeKnown = record?.entry_time || lastEntryByPlate.get(key);
 
-      // Thành công
-      alert(currentLane === "vao" ? "✅ Xe đã vào bãi" : "✅ Xe đã rời bãi");
-    } catch (err) {
-      console.error("Fetch error:", err);
-      alert("❌ Lỗi gửi dữ liệu đến backend!");
+      if (entryTimeKnown) vaoEl.textContent = fmtVN(entryTimeKnown);
+      bienSoEl.textContent = record?.license_plate || plate.trim();
+      raEl.textContent = fmtVN(
+        data.exit_time || record?.exit_time || new Date().toISOString()
+      );
+      const fee = data?.fee ?? record?.parking_fee ?? 0;
+      tienEl.textContent = fee.toLocaleString("vi-VN") + " đ";
+
+      // clear cache
+      lastEntryByPlate.delete(key);
+
+      // demo đếm
+      counts.car.available += 1;
+      counts.car.parked = Math.max(0, counts.car.parked - 1);
+      renderCounts();
+
+      toast("✅ Xe đã rời bãi");
     }
-  });
-
-  switchLaneButton.addEventListener("click", switchLane);
-
-  startWebcam();
-  updateVehicleCount();
+  } catch (err) {
+    console.error(err);
+    toast("❌ Lỗi gửi dữ liệu đến backend", false);
+  } finally {
+    btn.disabled = false;
+  }
 });

@@ -1,99 +1,99 @@
 const tatcabaido = [
   {
     name: "Bãi xe Trường Chinh - Hà Nội",
-    image: "/smart parking/ảnh/bai7.png",
+    image: "/frontend/ảnh/bai7.png",
   },
   {
     name: "Bãi xe Lê Duẩn - Hà Nội",
-    image: "/smart parking/ảnh/bai2.jpg",
+    image: "/frontend/ảnh/bai2.jpg",
   },
   {
     name: "Bãi xe Láng Hạ - Hà Nội",
-    image: "/smart parking/ảnh/automated.webp",
+    image: "/frontend/ảnh/automated.webp",
   },
   {
     name: "Bãi xe Nguyễn Văn Cừ - TP.HCM",
-    image: "/smart parking/ảnh/2.jpg",
+    image: "/frontend/ảnh/2.jpg",
   },
   {
     name: "Bãi xe Lê Lợi - Huế",
-    image: "/smart parking/ảnh/12.jpg",
+    image: "/frontend/ảnh/12.jpg",
   },
   {
     name: "Bãi xe Bạch Đằng - Đà Nẵng",
-    image: "/smart parking/ảnh/bai1.jpg",
+    image: "/frontend/ảnh/bai1.jpg",
   },
   {
     name: "Bãi xe biển - Đà Nẵng",
-    image: "/smart parking/ảnh/5.jpg",
+    image: "/frontend/ảnh/5.jpg",
   },
   {
     name: "Bãi xe Hà Đông - Hà Nội",
-    image: "/smart parking/ảnh/bai2.jpg",
+    image: "/frontend/ảnh/bai2.jpg",
   },
   {
     name: "Bãi xe Nguyễn Văn Linh - Đà Nẵng",
-    image: "/smart parking/ảnh/bai3.jpg",
+    image: "/frontend/ảnh/bai3.jpg",
   },
   {
     name: "Bãi xe CMT8 - TP.HCM",
-    image: "/smart parking/ảnh/bai4.jpg",
+    image: "/frontend/ảnh/bai4.jpg",
   },
   {
     name: "Bãi xe Nguyễn Tất Thành - Cần Thơ",
-    image: "/smart parking/ảnh/bai5.jpg",
+    image: "/frontend/ảnh/bai5.jpg",
   },
   {
     name: "Bãi xe Phạm Văn Đồng - Nha Trang",
-    image: "/smart parking/ảnh/bai6.jpg",
+    image: "/frontend/ảnh/bai6.jpg",
   },
   {
     name: "Bãi xe Lý Thường Kiệt - TP.HCM",
-    image: "/smart parking/ảnh/bai7.jpg",
+    image: "/frontend/ảnh/bai7.jpg",
   },
   {
     name: "Bãi xe Trường Chinh - Hà Nội",
-    image: "/smart parking/ảnh/bai7.png",
+    image: "/frontend/ảnh/bai7.png",
   },
   {
     name: "Bãi xe Hùng Vương - Huế",
-    image: "/smart parking/ảnh/bai8.jpg",
+    image: "/frontend/ảnh/bai8.jpg",
   },
   {
     name: "Bãi xe Xô Viết Nghệ Tĩnh - TP.HCM",
-    image: "/smart parking/ảnh/bai9.jpg",
+    image: "/frontend/ảnh/bai9.jpg",
   },
   {
     name: "Bãi xe Hàm Nghi - TP.HCM",
-    image: "/smart parking/ảnh/bai10.jpg",
+    image: "/frontend/ảnh/bai10.jpg",
   },
   {
     name: "Bãi xe Nguyễn Trãi - TP.HCM",
-    image: "/smart parking/ảnh/bai15.jpg",
+    image: "/frontend/ảnh/bai15.jpg",
   },
   {
     name: "Bãi xe Phan Đăng Lưu - TP.HCM",
-    image: "/smart parking/ảnh/bai11.jpg",
+    image: "/frontend/ảnh/bai11.jpg",
   },
   {
     name: "Bãi xe Trần Hưng Đạo - Hà Nội",
-    image: "/smart parking/ảnh/bai12.jpg",
+    image: "/frontend/ảnh/bai12.jpg",
   },
   {
     name: "Bãi xe Võ Văn Kiệt - Đà Nẵng",
-    image: "/smart parking/ảnh/bai13.jpg",
+    image: "/frontend/ảnh/bai13.jpg",
   },
   {
     name: "Bãi xe Nam Kỳ Khởi Nghĩa - TP.HCM",
-    image: "/smart parking/ảnh/bai14.jpg",
+    image: "/frontend/ảnh/bai14.jpg",
   },
   {
     name: "Bãi xe Nguyễn Trãi - TP.HCM",
-    image: "/smart parking/ảnh/bai15.jpg",
+    image: "/frontend/ảnh/bai15.jpg",
   },
   {
     name: "Bãi xe Lạc Long Quân - Hà Nội",
-    image: "/smart parking/ảnh/bai16.jpg",
+    image: "/frontend/ảnh/bai16.jpg",
   },
 ];
 

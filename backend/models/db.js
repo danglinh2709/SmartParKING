@@ -1,6 +1,7 @@
-const sql = require("mssql");
-require("dotenv").config();
+const sql = require("mssql"); // MSSQL SQL Server(thư viện)
+require("dotenv").config(); // dotenv: đọc biến môi trường từ file .env
 
+// đối tượng cấu hình kết nối SQL Server
 const config = {
   server: process.env.DB_SERVER,
   database: process.env.DB_DATABASE,
@@ -13,14 +14,15 @@ const config = {
   },
 };
 
+// Tạo Connection Pool và xuất để sử dụng trong app
 const poolPromise = new sql.ConnectionPool(config)
   .connect()
   .then((pool) => {
-    console.log("✅ Connected to SQL Server via SQL Authentication");
+    console.log("Connected to SQL Server via SQL Authentication");
     return pool;
   })
   .catch((err) => {
-    console.error("❌ Database connection failed:", err);
+    console.error(" Database connection failed:", err);
     process.exit(1); // thoát app nếu connect fail
   });
 
