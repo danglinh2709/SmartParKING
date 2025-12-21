@@ -186,39 +186,133 @@ nav ul li a:hover {
   font-size: 1rem;
 }
 
-.legend {
+/* ===== PARKING LIST ===== */
+.parking-container {
   display: flex;
-  gap: 20px;
-  align-items: center;
-  margin: 20px auto;
+  flex-wrap: wrap;
   justify-content: center;
-  font-weight: bold;
+  gap: 25px;
+  padding: 40px;
 }
 
-.legend .spot {
-  width: 20px;
-  height: 20px;
-  display: inline-block;
+.parking-card {
+  width: 320px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s;
+}
+
+.parking-card:hover {
+  transform: translateY(-6px);
+}
+
+.parking-card img {
+  width: 100%;
+  height: 160px;
+  object-fit: cover;
+}
+
+.parking-card p {
+  text-align: center;
+  margin: 6px 0;
+  font-weight: 600;
+}
+
+/* ===== TIÊU ĐỀ BÃI XE ===== */
+.parking-header {
+  text-align: center;
+  margin: 20px 0;
+}
+
+.parking-title {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.parking-summary {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  font-size: 15px;
+}
+
+.legend-box {
+  width: 14px;
+  height: 14px;
   border-radius: 4px;
-  margin-right: 8px;
+  display: inline-block;
+  margin-right: 6px;
 }
 
+.legend-box.total {
+  background: #6b7280;
+}
+.legend-box.free {
+  background: #16a34a;
+}
+.legend-box.occupied {
+  background: #dc2626;
+}
+
+/* ===== ZONE ===== */
+.zones-wrapper {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  margin-bottom: 60px;
+}
+
+.zone h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.spot-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 44px);
+  gap: 12px;
+  justify-content: center;
+}
+
+/* ===== SPOT ===== */
 .spot {
   width: 40px;
   height: 40px;
-  margin: 4px;
-  border-radius: 4px;
-  display: inline-block;
-  background-color: green;
-
+  margin: 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  border-radius: 6px;
   cursor: pointer;
 }
+
+.spot.free {
+  background-color: #2ecc71;
+  color: white;
+}
+
 .spot.occupied {
-  background-color: red;
+  background: #dc2626;
   cursor: not-allowed;
 }
+.spot.pending {
+  background: #d1d5db;
+  color: #1f2937;
+  cursor: not-allowed;
+}
+
 .spot.selected {
-  background-color: red;
+  background: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
+}
+
+.spot.free:hover {
+  transform: scale(1.12);
 }
 .payment-modal {
   position: fixed;
@@ -238,6 +332,152 @@ nav ul li a:hover {
   border-radius: 8px;
   text-align: center;
   max-width: 300px;
+}
+/* ===== TOAST NOTIFICATION ===== */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.toast {
+  min-width: 220px;
+  background: #22c55e; /* xanh thành công */
+  color: white;
+  padding: 12px 16px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
+.parking-card {
+  padding-bottom: 16px; /* tạo khoảng cách với mép dưới card */
+}
+
+.total-slot {
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+/* nút button hủy đặt chỗ */
+.cancel-btn {
+  position: absolute;
+  left: 30px;
+  top: 160px;
+  background: #dc2626;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  z-index: 100;
+}
+
+.cancel-btn:hover {
+  background: #b91c1c;
+}
+
+/* form nhập thông tin khi đặt chỗ */
+/* FORM ĐẶT CHỖ */
+.reserve-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.reserve-content {
+  background: #fff;
+  width: 380px;
+  padding: 20px;
+  border-radius: 10px;
+  animation: zoomIn 0.25s ease;
+}
+
+.reserve-content h3 {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.reserve-content label {
+  font-weight: bold;
+  margin-top: 10px;
+  display: block;
+}
+
+.reserve-content input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.price-box {
+  margin-top: 15px;
+  padding: 10px;
+  background: #f0f9ff;
+  border-radius: 6px;
+  font-weight: bold;
+  color: #0369a1;
+}
+
+.reserve-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.btn-cancel {
+  background: #e5e7eb;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-confirm {
+  background: #22c55e;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+@keyframes zoomIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 /* kết */

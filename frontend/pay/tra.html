@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pay for Parking</title>
+    <script src="./tra.js"></script>
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
@@ -111,11 +112,11 @@
               <h2>Parking Spot</h2>
               <p class="ticket-label">Enter Ticket Number</p>
               <p class="ticket-note">mentioned on your parking ticket</p>
-              <img
-                src="/smart parking/ảnh/tra.png"
-                alt="Ticket"
-                class="ticket-img"
-              />
+              <img id="qrTicket" class="ticket-img" alt="QR Ticket" />
+
+              <p class="warning">
+                ⏳ Vui lòng thanh toán trong <span id="countdown">10:00</span>
+              </p>
             </div>
 
             <!-- Right box -->
@@ -126,7 +127,9 @@
                 information in the fields below.
               </p>
               <div class="khung"><div class="khungbe"></div></div>
-              <button class="scan-button">Scan Ticket 📷</button>
+              <button onclick="payNow()" class="scan-button">
+                Thanh toán ngay 💳
+              </button>
             </div>
           </div>
         </div>

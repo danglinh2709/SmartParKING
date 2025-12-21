@@ -1,181 +1,381 @@
-const tatcabaido = [
-  {
-    name: "Bãi xe Trường Chinh - Hà Nội",
-    image: "/frontend/ảnh/bai7.png",
-  },
-  {
-    name: "Bãi xe Lê Duẩn - Hà Nội",
-    image: "/frontend/ảnh/bai2.jpg",
-  },
-  {
-    name: "Bãi xe Láng Hạ - Hà Nội",
-    image: "/frontend/ảnh/automated.webp",
-  },
-  {
-    name: "Bãi xe Nguyễn Văn Cừ - TP.HCM",
-    image: "/frontend/ảnh/2.jpg",
-  },
-  {
-    name: "Bãi xe Lê Lợi - Huế",
-    image: "/frontend/ảnh/12.jpg",
-  },
-  {
-    name: "Bãi xe Bạch Đằng - Đà Nẵng",
-    image: "/frontend/ảnh/bai1.jpg",
-  },
-  {
-    name: "Bãi xe biển - Đà Nẵng",
-    image: "/frontend/ảnh/5.jpg",
-  },
-  {
-    name: "Bãi xe Hà Đông - Hà Nội",
-    image: "/frontend/ảnh/bai2.jpg",
-  },
-  {
-    name: "Bãi xe Nguyễn Văn Linh - Đà Nẵng",
-    image: "/frontend/ảnh/bai3.jpg",
-  },
-  {
-    name: "Bãi xe CMT8 - TP.HCM",
-    image: "/frontend/ảnh/bai4.jpg",
-  },
-  {
-    name: "Bãi xe Nguyễn Tất Thành - Cần Thơ",
-    image: "/frontend/ảnh/bai5.jpg",
-  },
-  {
-    name: "Bãi xe Phạm Văn Đồng - Nha Trang",
-    image: "/frontend/ảnh/bai6.jpg",
-  },
-  {
-    name: "Bãi xe Lý Thường Kiệt - TP.HCM",
-    image: "/frontend/ảnh/bai7.jpg",
-  },
-  {
-    name: "Bãi xe Trường Chinh - Hà Nội",
-    image: "/frontend/ảnh/bai7.png",
-  },
-  {
-    name: "Bãi xe Hùng Vương - Huế",
-    image: "/frontend/ảnh/bai8.jpg",
-  },
-  {
-    name: "Bãi xe Xô Viết Nghệ Tĩnh - TP.HCM",
-    image: "/frontend/ảnh/bai9.jpg",
-  },
-  {
-    name: "Bãi xe Hàm Nghi - TP.HCM",
-    image: "/frontend/ảnh/bai10.jpg",
-  },
-  {
-    name: "Bãi xe Nguyễn Trãi - TP.HCM",
-    image: "/frontend/ảnh/bai15.jpg",
-  },
-  {
-    name: "Bãi xe Phan Đăng Lưu - TP.HCM",
-    image: "/frontend/ảnh/bai11.jpg",
-  },
-  {
-    name: "Bãi xe Trần Hưng Đạo - Hà Nội",
-    image: "/frontend/ảnh/bai12.jpg",
-  },
-  {
-    name: "Bãi xe Võ Văn Kiệt - Đà Nẵng",
-    image: "/frontend/ảnh/bai13.jpg",
-  },
-  {
-    name: "Bãi xe Nam Kỳ Khởi Nghĩa - TP.HCM",
-    image: "/frontend/ảnh/bai14.jpg",
-  },
-  {
-    name: "Bãi xe Nguyễn Trãi - TP.HCM",
-    image: "/frontend/ảnh/bai15.jpg",
-  },
-  {
-    name: "Bãi xe Lạc Long Quân - Hà Nội",
-    image: "/frontend/ảnh/bai16.jpg",
-  },
-];
+const API = "http://localhost:5000/api";
+let baidoDangHienThi = [];
+let cancelMode = false;
+let selectedLotId = null;
+let selectedSpotNumber = null;
 
-window.onload = () => {
-  document.getElementById("locationPrompt").style.display = "flex";
+/* ================= LOAD TRANG ================= */
+window.onload = async () => {
+  const modal = document.getElementById("thongbaovitri");
+  if (modal) modal.style.display = "flex";
+
+  try {
+    const res = await fetch(`${API}/parking-lots`);
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    baidoDangHienThi = await res.json();
+    renderParkingList(baidoDangHienThi);
+  } catch (err) {
+    console.error(err);
+    alert("Không tải được dữ liệu bãi đỗ");
+  }
 };
 
-function yeucautruycapvitri(granted) {
-  document.getElementById("thongbaovitri").style.display = "none"; // ẩn khung thông báo đi sau khi chọn đồng ý/từ chối truy cập
-  document.getElementById("searchBar").style.display = "block"; // sau đó, hiển thị thanh tìm kiếm
+/* ================= MODAL VỊ TRÍ ================= */
+function yeucautruycapvitri() {
+  document.getElementById("thongbaovitri").style.display = "none";
+  document.getElementById("searchBar").style.display = "block";
+}
+
+/* ================= DANH SÁCH BÃI ================= */
+function renderParkingList(list) {
   const container = document.getElementById("parkingList");
-  container.style.display = "flex"; // đặt kiểu hiển thị của container(bãi đỗ xe) thành flex, theo dạng flexbox linh hoạt
-  //   container.innerHTML = "";
+  container.innerHTML = "";
+  container.style.display = "flex";
 
-  const cacbaido_dchienthi = granted ? tatcabaido.slice(0, 3) : tatcabaido;
+  if (!list || list.length === 0) {
+    container.innerHTML = "<p>Không có bãi đỗ</p>";
+    return;
+  }
 
-  // lot: bãi đỗ
-  cacbaido_dchienthi.forEach((lot) => {
-    const card = document.createElement("div"); // tạo 1 thẻ div
-    card.className = "parking-card"; // gán lớp css parking-card cho thẻ div
-    //    thêm nội dung vào trong thẻ html
+  list.forEach((lot) => {
+    const card = document.createElement("div");
+    card.className = "parking-card";
+
     card.innerHTML = `
-        <img src="${lot.image}" alt="${lot.name}" style="width:100%; height:180px; object-fit:cover; border-radius:10px 10px 0 0;"/>
-        <p style="padding:10px; font-weight:bold; text-align:center;">${lot.name}</p>
-      `;
+  <img src="http://localhost:5000${lot.image_url}" />
+  <p class="lot-name"><b>${lot.name}</b></p>
+  <p class="total-slot">Tổng chỗ: ${lot.total_spots}</p>
+`;
 
-    card.onclick = () => showSpots(); // khi click vào thẻ card (div-đại diện cho từng bãi đỗ) thì hàm showSpots sẽ đc gọi: dùng để hiển thị thông tinchi tiết về bãi đỗ
-    container.appendChild(card); //Thêm phần tử card (thẻ div vừa tạo) vào trong container (danh sách các bãi đậu xe). Lúc này, card sẽ xuất hiện trong trang web dưới dạng một phần tử con của container.
+    card.onclick = () => showSpots(lot.id, lot.total_spots);
+    container.appendChild(card);
   });
 }
 
-// function filterParking(value) {
-//   const container = document.getElementById("parkingList");
-//   //   parkingList(chứa danh sách các thẻ bãi đậu xe).
-//   const cards = container.querySelectorAll(".parking-card");
-//   //Lấy tất cả các phần tử con có class "parking-card" trong container (mỗi thẻ là 1 bãi đậu xe).
+/* ================= TÌM KIẾM ================= */
+function filterParking(value) {
+  const keyword = value.toLowerCase().trim();
+  if (!keyword) return renderParkingList(baidoDangHienThi);
 
-//   cards.forEach((card) => {
-//     //card: bãi đậu
+  renderParkingList(
+    baidoDangHienThi.filter((b) => b.name.toLowerCase().includes(keyword))
+  );
+}
 
-//     // Kiểm tra xem văn bản trong thẻ (card) có chứa chuỗi tìm kiếm value (không phân biệt hoa thường) không.
-//     const match = card.textContent.toLowerCase().includes(value.toLowerCase());
-//     card.style.display = match ? "block" : "none";
-//   });
-// }
+/* ================= HIỂN THỊ CHỖ ================= */
+async function showSpots(parkingLotId, totalSpots) {
+  cancelMode = false;
 
-function showSpots() {
   document.getElementById("parkingList").style.display = "none";
-  document.getElementById("searchBar").style.display = "none"; // Ẩn thanh tìm kiếm
-  document.getElementById("legend").style.display = "flex"; // Hiện chú thích 2 ô đỏ xanh
+  document.getElementById("searchBar").style.display = "none";
+  document.getElementById("legend").style.display = "flex";
+  document.getElementById("parkingHeader").style.display = "block";
 
-  const container = document.getElementById("spotView");
-  container.style.display = "grid"; //
-  container.style.gridTemplateColumns = "repeat(auto-fit, minmax(50px, 1fr))";
-  container.style.gap = "10px";
-  //   container.innerHTML = "";
+  const lot = baidoDangHienThi.find((b) => b.id === parkingLotId);
+  document.getElementById("lotName").textContent = lot.name;
 
-  for (let i = 0; i < 315; i++) {
+  const res = await fetch(`${API}/parking-lots/${parkingLotId}/spot-status`);
+  const data = await res.json();
+
+  const spotMap = {};
+  let paid = 0,
+    pending = 0;
+
+  data.forEach((s) => {
+    spotMap[s.spot_number] = s.status;
+    if (s.status === "PAID") paid++;
+    if (s.status === "PENDING") pending++;
+  });
+
+  document.getElementById("totalSpots").textContent = totalSpots;
+  document.getElementById("usedSpots").textContent = paid;
+  document.getElementById("freeSpots").textContent =
+    totalSpots - paid - pending;
+
+  const zoneA = document.getElementById("zoneA");
+  const zoneB = document.getElementById("zoneB");
+  zoneA.innerHTML = "";
+  zoneB.innerHTML = "";
+
+  const half = Math.ceil(totalSpots / 2);
+
+  for (let i = 1; i <= totalSpots; i++) {
     const spot = document.createElement("div");
     spot.className = "spot";
-    if (Math.random() < 0.45) spot.classList.add("occupied"); // 0# chỗ bị chiếm
+    spot.textContent = i;
 
-    spot.onclick = function () {
-      if (spot.classList.contains("occupied")) return;
-      container
-        .querySelectorAll(".selected")
-        .forEach((s) => s.classList.remove("selected"));
-      spot.classList.add("selected");
+    if (spotMap[i] === "PAID") {
+      spot.classList.add("occupied");
+      spot.onclick = () => cancelMode && confirmCancel(parkingLotId, i, "PAID");
+    } else if (spotMap[i] === "PENDING") {
+      spot.classList.add("free", "pending");
 
-      setTimeout(() => alert("Bạn đã chọn chỗ thành công"), 100); // sau 100ms thì hiển thị thông báo
-      setTimeout(() => {
-        // sau 300s thì hiển thị khung thanh toán
-        document.getElementById("paymentModal").style.display = "flex";
-      }, 300);
-    };
+      spot.onclick = () => {
+        if (cancelMode) {
+          confirmCancel(parkingLotId, i, "PENDING");
+        } else {
+          continuePayment(parkingLotId, i);
+        }
+      };
+    } else {
+      spot.classList.add("free");
+      spot.onclick = () => openReserveForm(parkingLotId, i);
+    }
 
-    // spot: ô (chỗ đậu xe)
+    (i <= half ? zoneA : zoneB).appendChild(spot);
+  }
+}
+function openReserveForm(lotId, spotNumber) {
+  selectedLotId = lotId;
+  selectedSpotNumber = spotNumber;
 
-    container.appendChild(spot);
+  // reset form
+  document.getElementById("plateInput").value = "";
+  document.getElementById("phoneInput").value = "";
+  document.getElementById("startTimeInput").value = "";
+  document.getElementById("endTimeInput").value = "";
+  document.getElementById("totalPrice").textContent = "0";
+
+  document.getElementById("reserveFormModal").style.display = "flex";
+}
+
+function closeReserveForm() {
+  document.getElementById("reserveFormModal").style.display = "none";
+}
+
+// tiếp tục thanh toán
+function continuePayment(parkingLotId, spotNumber) {
+  // Lưu lại thông tin (phòng trường hợp reload)
+  localStorage.setItem("parking_lot_id", parkingLotId);
+  localStorage.setItem("spot_number", spotNumber);
+
+  const ticket = localStorage.getItem("parking_ticket");
+
+  if (!ticket) {
+    alert("Không tìm thấy vé để tiếp tục thanh toán");
+    return;
+  }
+
+  showToast(`➡️ Tiếp tục thanh toán chỗ ${spotNumber}`);
+
+  // 👉 chuyển sang trang thanh toán
+  window.location.href = "../pay/tra.html";
+}
+
+/* ================= ĐẶT CHỖ ================= */
+async function confirmReserveInfo() {
+  const plate = document.getElementById("plateInput").value.trim();
+  const phone = document.getElementById("phoneInput").value.trim();
+  const startTime = document.getElementById("startTimeInput").value;
+  const endTime = document.getElementById("endTimeInput").value;
+
+  if (!plate || !phone || !startTime || !endTime) {
+    alert("Vui lòng nhập đầy đủ thông tin");
+    return;
+  }
+
+  const hours = Math.ceil(
+    (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60)
+  );
+
+  const res = await fetch(`${API}/reservations`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      parking_lot_id: selectedLotId,
+      spot_number: selectedSpotNumber,
+      plate,
+      phone,
+      start_time: startTime,
+      end_time: endTime,
+      hours,
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) {
+    alert(data.msg);
+    return;
+  }
+
+  localStorage.setItem("parking_ticket", data.ticket);
+
+  closeReserveForm();
+  document.getElementById("paymentModal").style.display = "flex";
+}
+
+/* ================= THANH TOÁN ================= */
+function proceedToPayment() {
+  document.getElementById("paymentModal").style.display = "none";
+  window.location.href = "tra.html";
+}
+
+/* ================= HUỶ CHẾ ĐỘ ================= */
+function enableCancelMode() {
+  cancelMode = true;
+  showToast("🟡 Chọn ô đã đặt để huỷ");
+  highlightCancelableSpots();
+}
+
+function highlightCancelableSpots() {
+  document.querySelectorAll(".spot").forEach((s) => {
+    if (s.classList.contains("pending") || s.classList.contains("occupied")) {
+      s.classList.add("cancelable");
+    }
+  });
+}
+
+function confirmCancel(lotId, spotNumber, status) {
+  const msg =
+    status === "PAID"
+      ? "⚠ Chỗ đã thanh toán. Bạn chắc chắn muốn huỷ?"
+      : "Bạn có chắc muốn huỷ chỗ này?";
+
+  if (!confirm(msg)) return;
+  cancelReservation(lotId, spotNumber);
+}
+
+async function cancelReservation(parkingLotId, spotNumber) {
+  try {
+    const res = await fetch(`${API}/reservations/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        parking_lot_id: parkingLotId,
+        spot_number: spotNumber,
+      }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) return alert(data.msg);
+
+    showToast("✅ Huỷ đặt chỗ thành công");
+    showSpots(parkingLotId, document.getElementById("totalSpots").textContent);
+  } catch {
+    alert("Lỗi khi huỷ");
   }
 }
 
-function proceedToPayment() {
-  window.location.href = "tra.html";
+// ================ GPS ====================
+function yeucautruycapvitri(granted) {
+  document.getElementById("thongbaovitri").style.display = "none";
+  document.getElementById("searchBar").style.display = "block";
+
+  if (!granted) {
+    renderParkingList(baidoDangHienThi);
+    return;
+  }
+
+  if (!navigator.geolocation) {
+    alert("Trình duyệt không hỗ trợ định vị");
+    renderParkingList(baidoDangHienThi);
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      const userLat = position.coords.latitude;
+      const userLng = position.coords.longitude;
+
+      let nearestLot = null;
+      let minDistance = Infinity;
+
+      baidoDangHienThi.forEach((lot) => {
+        if (lot.lat == null || lot.lng == null) return;
+
+        const lat = parseFloat(lot.lat);
+        const lng = parseFloat(lot.lng);
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        const d = tinhKhoangCach(userLat, userLng, lat, lng);
+
+        if (d < minDistance) {
+          minDistance = d;
+          nearestLot = lot;
+        }
+      });
+
+      if (!nearestLot) {
+        alert("Không tìm được bãi đỗ gần bạn");
+        renderParkingList(baidoDangHienThi);
+        return;
+      }
+
+      renderParkingList([nearestLot]);
+
+      showToast(
+        `📍 Bãi đỗ gần nhất: ${nearestLot.name} (~${minDistance.toFixed(2)} km)`
+      );
+    },
+    () => {
+      alert("Không thể truy cập vị trí");
+      renderParkingList(baidoDangHienThi);
+    }
+  );
 }
+
+// Hàm tính khoảng cách giữa hai tọa độ (theo km)
+function tinhKhoangCach(lat1, lon1, lat2, lon2) {
+  if (!lat2 || !lon2) return Infinity;
+
+  const R = 6371; // km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+/* ===== GIÁ THEO GIỜ ===== */
+const PRICE_PER_HOUR = 10000;
+
+function calculatePrice() {
+  const startInput = document.getElementById("startTimeInput");
+  const endInput = document.getElementById("endTimeInput");
+  const priceEl = document.getElementById("totalPrice");
+
+  if (!startInput.value || !endInput.value) {
+    priceEl.textContent = "0";
+    return;
+  }
+
+  const start = new Date(startInput.value);
+  const end = new Date(endInput.value);
+
+  if (end <= start) {
+    priceEl.textContent = "0";
+    return;
+  }
+
+  const hours = Math.ceil(
+    (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+  );
+
+  priceEl.textContent = (hours * PRICE_PER_HOUR).toLocaleString("vi-VN");
+}
+
+
+
+/* ================= TOAST ================= */
+function showToast(message) {
+  const container = document.getElementById("toast-container");
+  const toast = document.createElement("div");
+  toast.className = "toast";
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => toast.remove(), 3000);
+}
+
+/* ================= SOCKET ================= */
+const socket = io("http://localhost:5000");
+socket.on("spot-freed", () => {
+  showToast("🚗 Có chỗ đỗ vừa được giải phóng!");
+});

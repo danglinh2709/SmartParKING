@@ -1,0 +1,116 @@
+const express = require("express");
+const router = express.Router();
+const poolPromise = require("../models/db");
+const { v4: uuidv4 } = require("uuid");
+
+router.post("/", async (req, res) => {
+  const { parking_lot_id, spot_number } = req.body;
+
+  if (!parking_lot_id || !spot_number) {
+    return res.status(400).json({ msg: "Thiếu dữ liệu" });
+  }
+
+  try {
+    const pool = await poolPromise;
+
+    // Kiểm tra chỗ đã được đặt chưa
+    const check = await pool
+      .request()
+      .input("parking_lot_id", parking_lot_id)
+      .input("spot_number", spot_number).query(`
+        SELECT * FROM ParkingReservation
+        WHERE parking_lot_id=@parking_lot_id
+        AND spot_number=@spot_number
+        AND status IN ('PENDING','PAID')
+      `);
+
+    if (check.recordset.length > 0) {
+      return res.status(400).json({ msg: "Chỗ đã được đặt" });
+    }
+
+    const ticket = "TICKET-" + uuidv4().slice(0, 8);
+
+    await pool
+      .request()
+      .input("ticket", ticket)
+      .input("parking_lot_id", parking_lot_id)
+      .input("spot_number", spot_number).query(`
+        INSERT INTO ParkingReservation
+        (ticket, parking_lot_id, spot_number, status, expired_at)
+        VALUES
+        (@ticket, @parking_lot_id, @spot_number, 'PENDING',
+         DATEADD(MINUTE, 10, GETDATE()))
+      `);
+
+    // LẤY IO TỪ APP
+    const io = req.app.get("io");
+
+    if (io) {
+      io.emit("spot-updated", {
+        parking_lot_id,
+        spot_number,
+        status: "PENDING",
+      });
+    }
+
+    res.json({ ticket, expires_in: 600 });
+  } catch (err) {
+    console.error("❌ reservation error:", err);
+    res.status(500).json({ msg: "Lỗi server" });
+  }
+});
+
+// HUỶ ĐẶT CHỖ SAU KHI THANH TOÁN
+router.post("/cancel", async (req, res) => {
+  const { parking_lot_id, spot_number } = req.body;
+
+  if (!parking_lot_id || !spot_number) {
+    return res.status(400).json({ msg: "Thiếu dữ liệu" });
+  }
+
+  try {
+    const pool = await poolPromise;
+
+    // Chỉ cho huỷ PENDING hoặc PAID
+    const check = await pool
+      .request()
+      .input("parking_lot_id", parking_lot_id)
+      .input("spot_number", spot_number).query(`
+        SELECT status 
+        FROM ParkingReservation
+        WHERE parking_lot_id = @parking_lot_id
+          AND spot_number = @spot_number
+      `);
+
+    if (check.recordset.length === 0) {
+      return res.status(404).json({ msg: "Không tìm thấy chỗ" });
+    }
+
+    const status = check.recordset[0].status;
+
+    if (!["PENDING", "PAID"].includes(status)) {
+      return res.status(400).json({ msg: "Không thể huỷ chỗ này" });
+    }
+
+    // Xoá đặt chỗ
+    await pool
+      .request()
+      .input("parking_lot_id", parking_lot_id)
+      .input("spot_number", spot_number).query(`
+        DELETE FROM ParkingReservation
+        WHERE parking_lot_id = @parking_lot_id
+          AND spot_number = @spot_number
+      `);
+
+    // realtime
+    const io = req.app.get("io");
+    if (io) io.emit("spot-freed");
+
+    res.json({ msg: "Huỷ đặt chỗ thành công" });
+  } catch (err) {
+    console.error("❌ Lỗi huỷ đặt chỗ:", err);
+    res.status(500).json({ msg: "Lỗi server" });
+  }
+});
+
+module.exports = router;

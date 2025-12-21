@@ -93,7 +93,7 @@
       </nav>
     </header>
 
-    <br /><br /><br /><br /><br /><br />
+    <br /><br /><br /><br />
     <!-- khối thông báo  -->
     <div class="modal" id="thongbaovitri">
       <div class="modal-content">
@@ -115,11 +115,82 @@
     </div>
 
     <div class="parking-container" id="parkingList"></div>
-    <div class="legend" id="legend" style="display: none">
-      <div><span class="spot free"></span> Chỗ trống</div>
-      <div><span class="spot occupied"></span> Đã đặt chỗ</div>
+    <!-- TIÊU ĐỀ + THỐNG KÊ -->
+    <div id="parkingHeader" class="parking-header" style="display: none">
+      <button
+        id="cancelModeBtn"
+        class="cancel-btn"
+        onclick="enableCancelMode()"
+      >
+        Huỷ đặt chỗ
+      </button>
+
+      <h2 id="lotName" class="parking-title"></h2>
+
+      <div class="parking-summary">
+        <div>
+          <span class="legend-box total"></span> Tổng: <b id="totalSpots"></b>
+        </div>
+        <div>
+          <span class="legend-box free"></span> Trống: <b id="freeSpots"></b>
+        </div>
+        <div>
+          <span class="legend-box occupied"></span> Đã đặt:
+          <b id="usedSpots"></b>
+        </div>
+      </div>
     </div>
-    <div class="spot-container" id="spotView"></div>
+
+    <!-- KHU ĐỖ -->
+    <div class="zones-wrapper" id="legend" style="display: none">
+      <div class="zone" id="zoneA-wrapper">
+        <h3>Khu A</h3>
+        <div class="spot-grid" id="zoneA"></div>
+      </div>
+
+      <div class="zone" id="zoneB-wrapper">
+        <h3>Khu B</h3>
+        <div class="spot-grid" id="zoneB"></div>
+      </div>
+    </div>
+    <!-- FORM ĐẶT CHỖ -->
+    <div class="reserve-modal" id="reserveFormModal">
+      <div class="reserve-content">
+        <h3>Thông tin đặt chỗ</h3>
+
+        <label>Biển số xe</label>
+        <input id="plateInput" placeholder="VD: 30A-12345" />
+
+        <label>Số điện thoại</label>
+        <input id="phoneInput" placeholder="VD: 098xxxxxxx" />
+
+        <label>Giờ vào</label>
+        <input
+          type="datetime-local"
+          id="startTimeInput"
+          onchange="calculatePrice()"
+        />
+
+        <label>Giờ ra</label>
+        <input
+          type="datetime-local"
+          id="endTimeInput"
+          onchange="calculatePrice()"
+        />
+
+        <div class="price-box">
+          💰 Tổng tiền: <span id="totalPrice">0</span> VNĐ
+        </div>
+
+        <div class="reserve-actions">
+          <button class="btn-cancel" onclick="closeReserveForm()">Huỷ</button>
+          <button class="btn-confirm" onclick="confirmReserveInfo()">
+            Xác nhận
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- khối thông báo thanh toán khi đặt chỗ -->
     <div class="payment-modal" id="paymentModal">
       <div class="payment-modal-content">
@@ -132,6 +203,7 @@
         </button>
       </div>
     </div>
+
     <!-- kết -->
     <footer class="footer">
       <div class="footer-container">
@@ -184,6 +256,8 @@
         >
       </div>
     </footer>
+    <div id="toast-container"></div>
+    <script src="http://localhost:5000/socket.io/socket.io.js"></script>
 
     <script src="./pay.js"></script>
   </body>
