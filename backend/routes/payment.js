@@ -1,8 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const poolPromise = require("../models/db");
+const auth = require("../middlewares/auth"); // ✅ BẮT BUỘC
 
-router.post("/", async (req, res) => {
+// ================== THANH TOÁN ==================
+router.post("/", auth, async (req, res) => {
   const { ticket } = req.body;
 
   if (!ticket) {
@@ -12,31 +14,26 @@ router.post("/", async (req, res) => {
   try {
     const pool = await poolPromise;
 
-    const result = await pool.request().input("ticket", ticket).query(`
-        UPDATE ParkingReservation
-        SET status='PAID'
-        WHERE ticket=@ticket
-        AND status='PENDING'
-        AND expired_at > GETDATE()
+    const check = await pool.request().input("ticket", ticket).query(`
+        SELECT * FROM ParkingReservation
+        WHERE ticket = @ticket AND status = 'PENDING'
       `);
 
-    if (result.rowsAffected[0] === 0) {
-      return res.status(400).json({ msg: "Vé không hợp lệ hoặc đã hết hạn" });
+    if (!check.recordset.length) {
+      return res
+        .status(400)
+        .json({ msg: "Vé không hợp lệ hoặc đã thanh toán" });
     }
 
-    // ✅ LẤY IO ĐÚNG CÁCH
-    const io = req.app.get("io");
-
-    if (io) {
-      io.emit("spot-updated", {
-        ticket,
-        status: "PAID",
-      });
-    }
+    await pool.request().input("ticket", ticket).query(`
+        UPDATE ParkingReservation
+        SET status = 'PAID'
+        WHERE ticket = @ticket
+      `);
 
     res.json({ msg: "Thanh toán thành công" });
   } catch (err) {
-    console.error(err);
+    console.error("❌ PAYMENT ERROR:", err);
     res.status(500).json({ msg: "Lỗi server" });
   }
 });

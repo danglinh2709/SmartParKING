@@ -4,6 +4,12 @@ let cancelMode = false;
 let selectedLotId = null;
 let selectedSpotNumber = null;
 
+function isLoggedIn() {
+  const token = localStorage.getItem("sp_token");
+  if (!token || token === "undefined" || token === "null") return false;
+  return true;
+}
+
 /* ================= LOAD TRANG ================= */
 window.onload = async () => {
   const modal = document.getElementById("thongbaovitri");
@@ -11,12 +17,9 @@ window.onload = async () => {
 
   try {
     const res = await fetch(`${API}/parking-lots`);
-    if (!res.ok) throw new Error("HTTP " + res.status);
-
     baidoDangHienThi = await res.json();
     renderParkingList(baidoDangHienThi);
-  } catch (err) {
-    console.error(err);
+  } catch {
     alert("Không tải được dữ liệu bãi đỗ");
   }
 };
@@ -112,6 +115,12 @@ async function showSpots(parkingLotId, totalSpots) {
       spot.classList.add("free", "pending");
 
       spot.onclick = () => {
+        if (!isLoggedIn()) {
+          alert("🔒 Vui lòng đăng nhập để tiếp tục thanh toán");
+          window.location.href = "/frontend/login/dangnhap.html";
+          return;
+        }
+
         if (cancelMode) {
           confirmCancel(parkingLotId, i, "PENDING");
         } else {
@@ -120,7 +129,15 @@ async function showSpots(parkingLotId, totalSpots) {
       };
     } else {
       spot.classList.add("free");
-      spot.onclick = () => openReserveForm(parkingLotId, i);
+      spot.onclick = () => {
+        if (!isLoggedIn()) {
+          alert("🔒 Vui lòng đăng nhập để đặt chỗ");
+          window.location.href = "/frontend/login/dangnhap.html";
+          return;
+        }
+
+        openReserveForm(parkingLotId, i);
+      };
     }
 
     (i <= half ? zoneA : zoneB).appendChild(spot);
@@ -146,25 +163,27 @@ function closeReserveForm() {
 
 // tiếp tục thanh toán
 function continuePayment(parkingLotId, spotNumber) {
-  // Lưu lại thông tin (phòng trường hợp reload)
-  localStorage.setItem("parking_lot_id", parkingLotId);
-  localStorage.setItem("spot_number", spotNumber);
-
-  const ticket = localStorage.getItem("parking_ticket");
-
-  if (!ticket) {
-    alert("Không tìm thấy vé để tiếp tục thanh toán");
+  if (!isLoggedIn()) {
+    alert("🔒 Vui lòng đăng nhập để tiếp tục thanh toán");
+    window.location.href = "/frontend/login/dangnhap.html";
     return;
   }
 
-  showToast(`➡️ Tiếp tục thanh toán chỗ ${spotNumber}`);
+  localStorage.setItem("parking_lot_id", parkingLotId);
+  localStorage.setItem("spot_number", spotNumber);
 
-  // 👉 chuyển sang trang thanh toán
   window.location.href = "../pay/tra.html";
 }
 
 /* ================= ĐẶT CHỖ ================= */
 async function confirmReserveInfo() {
+  if (!isLoggedIn()) {
+    alert("🔒 Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại");
+    localStorage.removeItem("sp_token");
+    window.location.href = "/frontend/login/dangnhap.html";
+    return;
+  }
+
   const plate = document.getElementById("plateInput").value.trim();
   const phone = document.getElementById("phoneInput").value.trim();
   const startTime = document.getElementById("startTimeInput").value;
@@ -181,7 +200,10 @@ async function confirmReserveInfo() {
 
   const res = await fetch(`${API}/reservations`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("sp_token")}`,
+    },
     body: JSON.stringify({
       parking_lot_id: selectedLotId,
       spot_number: selectedSpotNumber,
@@ -193,9 +215,17 @@ async function confirmReserveInfo() {
     }),
   });
 
+  if (res.status === 401) {
+    alert(" Bạn cần đăng nhập trước khi đặt chỗ");
+    localStorage.removeItem("sp_token");
+    window.location.href = "/frontend/login/dangnhap.html";
+    return;
+  }
+
   const data = await res.json();
+
   if (!res.ok) {
-    alert(data.msg);
+    alert(data.msg || "Đặt chỗ thất bại");
     return;
   }
 
@@ -204,6 +234,7 @@ async function confirmReserveInfo() {
   closeReserveForm();
   document.getElementById("paymentModal").style.display = "flex";
 }
+
 
 /* ================= THANH TOÁN ================= */
 function proceedToPayment() {
@@ -258,7 +289,7 @@ async function cancelReservation(parkingLotId, spotNumber) {
 }
 
 // ================ GPS ====================
-function yeucautruycapvitri(granted) {
+function xuLyQuyenViTri(granted) {
   document.getElementById("thongbaovitri").style.display = "none";
   document.getElementById("searchBar").style.display = "block";
 
@@ -354,14 +385,12 @@ function calculatePrice() {
     return;
   }
 
-  const hours = Math.ceil(
-    (end.getTime() - start.getTime()) / (1000 * 60 * 60)
-  );
+  const diffMs = end - start;
+  const hours = Math.ceil(diffMs / (1000 * 60 * 60));
 
-  priceEl.textContent = (hours * PRICE_PER_HOUR).toLocaleString("vi-VN");
+  const total = hours * PRICE_PER_HOUR;
+  priceEl.textContent = total.toLocaleString("vi-VN");
 }
-
-
 
 /* ================= TOAST ================= */
 function showToast(message) {

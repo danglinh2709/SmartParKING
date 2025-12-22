@@ -2,6 +2,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const API = "http://localhost:5000/api";
   const TOTAL_TIME = 600; // 10 phút
 
+  /* ================= LOGIN CHECK ================= */
+  const token = localStorage.getItem("sp_token");
+  if (!token) {
+    alert("🔒 Vui lòng đăng nhập để thanh toán");
+    window.location.href = "/frontend/login/dangnhap.html";
+    return;
+  }
+
   const ticket = localStorage.getItem("parking_ticket");
   if (!ticket) {
     alert("❌ Không có vé hợp lệ");
@@ -41,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       localStorage.removeItem(startKey);
       localStorage.removeItem("parking_ticket");
-
       window.location.href = "/frontend/trangchu/index.html";
       return;
     }
@@ -63,32 +70,50 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= PAY ================= */
   window.payNow = async function () {
     try {
+      const token = localStorage.getItem("sp_token");
+
+      if (!token) {
+        alert("🔒 Vui lòng đăng nhập để thanh toán");
+        window.location.href = "/frontend/login/dangnhap.html";
+        return;
+      }
+
       const res = await fetch(`${API}/payment`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ ticket }),
       });
 
       const data = await res.json();
+
+      if (res.status === 401) {
+        alert(data.msg || "🔒 Vui lòng đăng nhập lại");
+        localStorage.removeItem("sp_token");
+        window.location.href = "/frontend/login/dangnhap.html";
+        return;
+      }
+
       if (!res.ok) {
         alert(data.msg || "❌ Thanh toán thất bại");
         return;
       }
 
       alert("✅ Thanh toán thành công");
-
       window.location.href = "/frontend/ticket/ticket.html";
     } catch (err) {
-      alert("❌ Lỗi server");
+      alert("❌ Không thể kết nối server");
     }
   };
 });
 
+/* ================= SOCKET ================= */
 const socket = io("http://localhost:5000");
 
 socket.on("expire-warning", (ticket) => {
   const myTicket = localStorage.getItem("parking_ticket");
-
   if (ticket === myTicket) {
     alert("⏰ Vé gửi xe sắp hết hạn! Bạn nên gia hạn.");
   }

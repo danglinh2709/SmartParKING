@@ -2,36 +2,47 @@ const http = require("http");
 require("dotenv").config();
 
 const app = require("./app");
+const poolPromise = require("./models/db"); // ✅ BẮT BUỘC
 
-// ===== SOCKET =====
-const { Server } = require("socket.io");
+// ===== CREATE SERVER =====
 const server = http.createServer(app);
 
-// const io = new Server(server, {
-//   cors: {
-//     origin: [/^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/],
-//   },
-// });
+// ===== SOCKET.IO =====
+const { Server } = require("socket.io");
+const io = new Server(server, {
+  cors: { origin: "*" },
+});
 
 io.on("connection", (socket) => {
-  console.log("🔌 Client connected:", socket.id);
+  console.log(`[SOCKET] + ${socket.id}`);
+
+  socket.on("disconnect", (reason) => {
+    console.log(`[SOCKET] - ${socket.id} (${reason})`);
+  });
 });
 
 // ===== JOBS =====
 const clearExpired = require("./jobs/clearExpired");
 const notifyExpire = require("./jobs/notifyExpire");
 
-setInterval(() => {
-  clearExpired(io);
+// 🔁 Xóa vé hết hạn
+setInterval(async () => {
+  try {
+    await clearExpired(io);
+  } catch (err) {
+    console.error("❌ clearExpired error:", err);
+  }
 }, 60 * 1000);
 
-const io = require("socket.io")(server, {
-  cors: { origin: "*" },
-});
+// 🔔 Nhắc sắp hết hạn
 setInterval(async () => {
-  const pool = await poolPromise;
-  notifyExpire(io, pool);
-}, 60000); // mỗi 1 phút
+  try {
+    const pool = await poolPromise;
+    await notifyExpire(io, pool);
+  } catch (err) {
+    console.error("❌ notifyExpire error:", err);
+  }
+}, 60 * 1000);
 
 // ===== START SERVER =====
 const PORT = process.env.PORT || 5000;

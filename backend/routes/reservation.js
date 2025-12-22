@@ -2,8 +2,10 @@ const express = require("express");
 const router = express.Router();
 const poolPromise = require("../models/db");
 const { v4: uuidv4 } = require("uuid");
+const auth = require("../middlewares/auth");
 
-router.post("/", async (req, res) => {
+// ================== ĐẶT CHỖ ==================
+router.post("/", auth, async (req, res) => {
   const { parking_lot_id, spot_number } = req.body;
 
   if (!parking_lot_id || !spot_number) {
@@ -13,18 +15,17 @@ router.post("/", async (req, res) => {
   try {
     const pool = await poolPromise;
 
-    // Kiểm tra chỗ đã được đặt chưa
     const check = await pool
       .request()
       .input("parking_lot_id", parking_lot_id)
       .input("spot_number", spot_number).query(`
-        SELECT * FROM ParkingReservation
+        SELECT 1 FROM ParkingReservation
         WHERE parking_lot_id=@parking_lot_id
         AND spot_number=@spot_number
         AND status IN ('PENDING','PAID')
       `);
 
-    if (check.recordset.length > 0) {
+    if (check.recordset.length) {
       return res.status(400).json({ msg: "Chỗ đã được đặt" });
     }
 
@@ -37,21 +38,15 @@ router.post("/", async (req, res) => {
       .input("spot_number", spot_number).query(`
         INSERT INTO ParkingReservation
         (ticket, parking_lot_id, spot_number, status, expired_at)
-        VALUES
-        (@ticket, @parking_lot_id, @spot_number, 'PENDING',
-         DATEADD(MINUTE, 10, GETDATE()))
+        VALUES (@ticket, @parking_lot_id, @spot_number, 'PENDING',
+                DATEADD(MINUTE, 10, GETDATE()))
       `);
 
-    // LẤY IO TỪ APP
-    const io = req.app.get("io");
-
-    if (io) {
-      io.emit("spot-updated", {
-        parking_lot_id,
-        spot_number,
-        status: "PENDING",
-      });
-    }
+    req.app.get("io")?.emit("spot-updated", {
+      parking_lot_id,
+      spot_number,
+      status: "PENDING",
+    });
 
     res.json({ ticket, expires_in: 600 });
   } catch (err) {
