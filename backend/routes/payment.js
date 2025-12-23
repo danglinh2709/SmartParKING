@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const poolPromise = require("../models/db");
-const auth = require("../middlewares/auth"); // ✅ BẮT BUỘC
+const auth = require("../middlewares/auth");
 
 // ================== THANH TOÁN ==================
 router.post("/", auth, async (req, res) => {

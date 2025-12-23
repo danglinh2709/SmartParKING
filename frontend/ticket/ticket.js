@@ -1,66 +1,93 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const ticket = localStorage.getItem("parking_ticket");
-  const lotId = localStorage.getItem("parking_lot_id");
-  const spot = localStorage.getItem("spot_number");
+document.addEventListener("DOMContentLoaded", async () => {
+  const API = "http://localhost:5000/api/tickets";
 
-  if (!ticket || !lotId || !spot) {
-    alert("Không tìm thấy thông tin vé");
-    window.location.href = "/frontend/trangchu/index.html";
+  /* ====== LẤY MÃ VÉ TỪ FORM TRƯỚC ====== */
+  const ticket = localStorage.getItem("parking_ticket");
+
+  if (!ticket) {
+    alert("❌ Không tìm thấy mã vé");
+    location.href = "/frontend/trangchu/index.html";
     return;
   }
 
-  // ===== GÁN DỮ LIỆU =====
-  document.getElementById("ticketCode").textContent = ticket;
-  document.getElementById("spotNumber").textContent = spot;
-  document.getElementById("parkingName").textContent =
-    "Bãi xe Trường Chinh - Hà Nội";
+  try {
+    /* ====== GỌI API LẤY THÔNG TIN VÉ ====== */
+    const res = await fetch(`${API}/${ticket}`);
 
-  const start = new Date();
-  const end = new Date(start.getTime() + 3 * 60 * 60 * 1000); // +3 giờ
+    const data = await res.json();
 
-  document.getElementById("startTime").textContent =
-    start.toLocaleString("vi-VN");
-  document.getElementById("endTime").textContent = end.toLocaleString("vi-VN");
+    if (!res.ok) {
+      alert(data.msg || "❌ Vé không hợp lệ");
+      location.href = "/frontend/trangchu/index.html";
+      return;
+    }
 
-  // ===== QR CODE =====
-  const qrData = JSON.stringify({
-    ticket,
-    lotId,
-    spot,
-    type: "SMART_PARKING",
-  });
+    /* ====== ĐỔ DỮ LIỆU RA HTML ====== */
+    document.getElementById("ticketCode").textContent = data.ticket;
+    document.getElementById("parkingName").textContent = data.parking_name;
+    document.getElementById("spotNumber").textContent = data.spot_number;
+    document.getElementById("startTime").textContent = formatTime(
+      data.start_time
+    );
+    document.getElementById("endTime").textContent = formatTime(
+      data.expired_at
+    );
 
-  document.getElementById("qrTicket").src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
-    encodeURIComponent(qrData);
+    /* ====== TẠO QR ====== */
+    const qrText = `
+Mã vé: ${data.ticket}
+Bãi xe: ${data.parking_name}
+Vị trí: ${data.spot_number}
+Vào: ${formatTime(data.start_time)}
+Hết hạn: ${formatTime(data.expired_at)}
+    `;
+
+    document.getElementById(
+      "qrTicket"
+    ).src = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
+      qrText
+    )}`;
+  } catch (err) {
+    console.error(err);
+    alert("❌ Không kết nối được server");
+  }
 });
 
-/* ====== LƯU VÉ (CHỈ CHỤP VÉ) ====== */
+/* ====== FORMAT THỜI GIAN ====== */
+function formatTime(time) {
+  const d = new Date(time);
+  return d.toLocaleString("vi-VN");
+}
+
+/* ====== LƯU VÉ ====== */
 function saveTicket() {
-  const actions = document.querySelector(".ticket-actions");
-  actions.style.display = "none";
+  if (!ticketLoaded) {
+    alert("⏳ Vé đang tải, vui lòng chờ 1–2 giây");
+    return;
+  }
 
   const ticket = document.getElementById("ticket-card");
 
-  html2canvas(ticket, {
-    scale: 2,
-    useCORS: true,
-  }).then((canvas) => {
+  html2canvas(ticket, { scale: 2 }).then((canvas) => {
     const link = document.createElement("a");
-    link.download = `ticket_${Date.now()}.png`;
+    link.download = "ve_gui_xe.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
-
-    actions.style.display = "flex";
   });
 }
 
-/* ====== TẢI RIÊNG QR ====== */
+/* ====== TẢI QR ====== */
 function downloadQR() {
   const qr = document.getElementById("qrTicket");
+
+  if (!qr.src) {
+    alert("❌ QR chưa sẵn sàng");
+    return;
+  }
+
   const link = document.createElement("a");
   link.href = qr.src;
-  link.download = "qr_ticket.png";
+  link.download = "qr_ve_gui_xe.png";
   link.click();
 }
 

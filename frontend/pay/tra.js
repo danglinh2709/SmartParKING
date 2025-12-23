@@ -70,21 +70,13 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= PAY ================= */
   window.payNow = async function () {
     try {
-      const token = localStorage.getItem("sp_token");
-
-      if (!token) {
-        alert("🔒 Vui lòng đăng nhập để thanh toán");
-        window.location.href = "/frontend/login/dangnhap.html";
-        return;
-      }
-
       const res = await fetch(`${API}/payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ticket }),
+        body: JSON.stringify({ ticket }), // ticket đã có sẵn
       });
 
       const data = await res.json();
@@ -102,8 +94,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       alert("✅ Thanh toán thành công");
-      window.location.href = "/frontend/ticket/ticket.html";
+
+      // ✅ CHUYỂN TRANG KÈM TICKET
+      window.location.href = `/frontend/ticket/ticket.html?ticket=${ticket}`;
     } catch (err) {
+      console.error(err);
       alert("❌ Không thể kết nối server");
     }
   };
@@ -119,25 +114,3 @@ socket.on("expire-warning", (ticket) => {
   }
 });
 //
-async function paySuccess() {
-  const ticket = localStorage.getItem("parking_ticket");
-
-  const res = await fetch(`${API}/reservations/pay`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("sp_token")}`,
-    },
-    body: JSON.stringify({ ticket }),
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    alert(data.msg);
-    return;
-  }
-
-  // ✅ CHỈ SAU KHI PAY THÀNH CÔNG MỚI ĐẾM GIỜ
-  startParkingCountdown(localStorage.getItem("parking_end_time"));
-}

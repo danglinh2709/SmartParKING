@@ -24,6 +24,7 @@ io.on("connection", (socket) => {
 // ===== JOBS =====
 const clearExpired = require("./jobs/clearExpired");
 const notifyExpire = require("./jobs/notifyExpire");
+const expireParking = require("./jobs/expireParking");
 
 // 🔁 Xóa vé hết hạn
 setInterval(async () => {
@@ -41,6 +42,16 @@ setInterval(async () => {
     await notifyExpire(io, pool);
   } catch (err) {
     console.error("❌ notifyExpire error:", err);
+  }
+}, 60 * 1000);
+
+// ⛔ Giải phóng chỗ khi hết giờ đỗ
+setInterval(async () => {
+  try {
+    const pool = await poolPromise;
+    await expireParking(io, pool);
+  } catch (err) {
+    console.error("❌ expireParking error:", err);
   }
 }, 60 * 1000);
 

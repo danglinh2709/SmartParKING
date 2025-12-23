@@ -17,7 +17,9 @@ app.use("/api/parking", require("./routes/parking"));
 app.use("/api/parking-lots", require("./routes/parkingLot"));
 app.use("/api/reservations", require("./routes/reservation"));
 app.use("/api/payment", require("./routes/payment"));
-app.use("/api/qr", require("./routes/qr"));
 app.use("/api/contact", require("./routes/contact"));
 app.use("/api/staff", require("./routes/staff"));
+
+app.use("/api/tickets", require("./routes/tickets"));
+
 module.exports = app;
