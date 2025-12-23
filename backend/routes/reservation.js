@@ -14,6 +14,12 @@ router.post("/", auth, async (req, res) => {
 
   try {
     const pool = await poolPromise;
+    // XÓA VÉ HẾT HẠN
+    await pool.request().query(`
+  DELETE FROM ParkingReservation
+  WHERE status = 'PENDING'
+    AND expired_at < GETDATE()
+`);
 
     const check = await pool
       .request()
