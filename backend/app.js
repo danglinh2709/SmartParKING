@@ -19,5 +19,5 @@ app.use("/api/reservations", require("./routes/reservation"));
 app.use("/api/payment", require("./routes/payment"));
 app.use("/api/qr", require("./routes/qr"));
 app.use("/api/contact", require("./routes/contact"));
-
+app.use("/api/staff", require("./routes/staff"));
 module.exports = app;

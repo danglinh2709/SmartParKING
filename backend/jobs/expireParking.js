@@ -1,29 +1,31 @@
-// backend/jobs/expireParking.js
-const poolPromise = require("../models/db");
+async function expireParking() {
+  const ticket = localStorage.getItem("parking_ticket");
 
-module.exports = async function expireParking(io) {
-  try {
-    const pool = await poolPromise;
-    const result = await pool.request().query(`
-      SELECT id, parking_lot_id, spot_number
-      FROM ParkingReservation
-      WHERE status = 'PAID'
-        AND expired_at < GETDATE()
-    `);
-
-    for (const r of result.recordset) {
-      await pool.request().input("id", r.id).query(`
-          UPDATE ParkingReservation
-          SET status = 'EXPIRED'
-          WHERE id = @id
-        `);
-
-      io.emit("spot-expired", {
-        parking_lot_id: r.parking_lot_id,
-        spot_number: r.spot_number,
-      });
-    }
-  } catch (err) {
-    console.error("❌ expireParking error:", err);
+  if (!ticket) {
+    console.warn("Không có ticket trong localStorage");
+    return;
   }
-};
+
+  try {
+    const res = await fetch(`${API}/reservations/expire`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("sp_token")}`,
+      },
+      body: JSON.stringify({ ticket }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.msg);
+      return;
+    }
+
+    showToast("⛔ Hết giờ đỗ – chỗ đã được giải phóng");
+    localStorage.removeItem("parking_ticket");
+  } catch (err) {
+    console.error(err);
+  }
+}

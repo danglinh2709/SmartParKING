@@ -235,7 +235,6 @@ async function confirmReserveInfo() {
   document.getElementById("paymentModal").style.display = "flex";
 }
 
-
 /* ================= THANH TOÁN ================= */
 function proceedToPayment() {
   document.getElementById("paymentModal").style.display = "none";
@@ -408,3 +407,36 @@ const socket = io("http://localhost:5000");
 socket.on("spot-freed", () => {
   showToast("🚗 Có chỗ đỗ vừa được giải phóng!");
 });
+
+/* ================= HẾT GIỜ ĐỖ ================= */
+function startParkingCountdown(endTimeISO) {
+  const endTime = new Date(endTimeISO).getTime();
+  let warned = false;
+
+  const warningBox = document.getElementById("expireWarning");
+  const countdownEl = document.getElementById("expireCountdown");
+
+  const timer = setInterval(async () => {
+    const now = Date.now();
+    const remain = Math.floor((endTime - now) / 1000);
+
+    // ===== CẢNH BÁO 30 GIÂY =====
+    if (remain <= 30 && remain > 0) {
+      warningBox.style.display = "block";
+      countdownEl.textContent = remain;
+
+      if (!warned) {
+        warned = true;
+        showToast("⚠️ Chỗ đỗ của bạn sắp hết giờ!");
+      }
+    }
+
+    // ===== HẾT GIỜ =====
+    if (remain <= 0) {
+      clearInterval(timer);
+      warningBox.style.display = "none";
+
+      await expireParking();
+    }
+  }, 1000);
+}

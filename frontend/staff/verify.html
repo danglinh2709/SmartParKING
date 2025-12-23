@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Staff | Xác nhận vé</title>
+    <link rel="stylesheet" href="verify.css" />
+  </head>
+
+  <body>
+    <!-- HEADER -->
+    <header class="topbar">
+      <div class="logo">🚗 SmartParking</div>
+      <div class="user">
+        <span id="parkingName"></span>
+        <button id="logoutBtn">Đăng xuất</button>
+      </div>
+    </header>
+
+    <main class="dashboard">
+      <!-- LEFT -->
+      <section class="left">
+        <!-- TICKET -->
+        <div class="card">
+          <h3>🎫 Quét / nhập vé</h3>
+          <div class="input-group">
+            <input id="ticketInput" placeholder="TICKET-xxxx" />
+            <button onclick="verifyTicket()">Xác nhận</button>
+          </div>
+
+          <div id="ticketInfo" class="ticket-info">
+            <span class="badge gray">Chưa xác nhận</span>
+          </div>
+        </div>
+
+        <!-- CAMERA -->
+        <div class="card">
+          <h3>📷 Camera nhận diện xe</h3>
+          <video id="cam" autoplay></video>
+          <canvas id="snapshot" hidden></canvas>
+        </div>
+      </section>
+
+      <!-- RIGHT -->
+      <section class="right">
+        <div class="card highlight">
+          <h3>Cho xe vào bãi</h3>
+          <button class="confirm" onclick="confirmEntry()">
+            CHO XE VÀO BÃI
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <div id="toast"></div>
+
+    <script src="verify.js"></script>
+  </body>
+</html>

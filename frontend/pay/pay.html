@@ -256,6 +256,26 @@
         >
       </div>
     </footer>
+    <!-- ===== CẢNH BÁO HẾT GIỜ ===== -->
+    <div
+      id="expireWarning"
+      style="
+        position: fixed;
+        bottom: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #dc2626;
+        color: white;
+        padding: 14px 22px;
+        border-radius: 8px;
+        font-weight: bold;
+        display: none;
+        z-index: 9999;
+      "
+    >
+      ⚠️ Chỗ đỗ sắp hết giờ: <span id="expireCountdown">30</span>s
+    </div>
+
     <div id="toast-container"></div>
     <script src="http://localhost:5000/socket.io/socket.io.js"></script>
 

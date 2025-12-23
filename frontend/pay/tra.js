@@ -118,3 +118,26 @@ socket.on("expire-warning", (ticket) => {
     alert("⏰ Vé gửi xe sắp hết hạn! Bạn nên gia hạn.");
   }
 });
+//
+async function paySuccess() {
+  const ticket = localStorage.getItem("parking_ticket");
+
+  const res = await fetch(`${API}/reservations/pay`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("sp_token")}`,
+    },
+    body: JSON.stringify({ ticket }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.msg);
+    return;
+  }
+
+  // ✅ CHỈ SAU KHI PAY THÀNH CÔNG MỚI ĐẾM GIỜ
+  startParkingCountdown(localStorage.getItem("parking_end_time"));
+}
