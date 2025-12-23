@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "nodemailer": "^7.0.12",
     "socket.io": "^4.8.1"
   }
 }
