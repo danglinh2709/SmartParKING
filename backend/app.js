@@ -18,5 +18,8 @@ app.use("/api/parking-lots", require("./routes/parkingLot"));
 app.use("/api/reservations", require("./routes/reservation"));
 app.use("/api/payment", require("./routes/payment"));
 app.use("/api/qr", require("./routes/qr"));
-
+app.use("/api/contact", require("./routes/contact"));
+app.use("/api/staff", require("./routes/staff"));
+app.use("/api", require("./routes/checkin"));
+app.use("/api", require("./routes/checkout"));
 module.exports = app;

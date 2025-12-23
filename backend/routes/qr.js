@@ -1,45 +1,27 @@
 const express = require("express");
 const router = express.Router();
 const poolPromise = require("../models/db");
+const auth = require("../middlewares/auth");
 
-router.post("/verify", async (req, res) => {
+router.post("/verify", auth, async (req, res) => {
   const { ticket } = req.body;
+  if (!ticket) return res.status(400).json({ msg: "Thiếu ticket" });
 
-  if (!ticket) {
-    return res.status(400).json({ msg: "Thiếu ticket" });
+  const pool = await poolPromise;
+
+  const r = await pool.request().input("ticket", ticket).query(`
+    SELECT id, hold_expired_at
+    FROM ParkingReservation
+    WHERE ticket = @ticket
+      AND status = 'PENDING'
+      AND hold_expired_at > GETDATE()
+  `);
+
+  if (!r.recordset.length) {
+    return res.status(400).json({ msg: "Vé không hợp lệ hoặc đã hết hạn" });
   }
 
-  try {
-    const pool = await poolPromise;
-
-    const result = await pool.request().input("ticket", ticket).query(`
-        SELECT status, expired_at
-        FROM ParkingReservation
-        WHERE ticket = @ticket
-      `);
-
-    if (result.recordset.length === 0) {
-      return res.status(404).json({ msg: "❌ Vé không tồn tại" });
-    }
-
-    const { status, expired_at } = result.recordset[0];
-
-    if (status === "PAID") {
-      return res.status(400).json({ msg: "❌ Vé đã thanh toán (QR hết hạn)" });
-    }
-
-    if (new Date(expired_at) < new Date()) {
-      return res.status(400).json({ msg: "❌ Vé đã hết hạn" });
-    }
-
-    res.json({
-      msg: "✅ Vé hợp lệ",
-      status,
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ msg: "Lỗi server" });
-  }
+  res.json({ ok: true });
 });
 
 module.exports = router;

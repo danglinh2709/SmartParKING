@@ -1,70 +1,54 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   const ticket = localStorage.getItem("parking_ticket");
-  const lotId = localStorage.getItem("parking_lot_id");
-  const spot = localStorage.getItem("spot_number");
+  if (!ticket) {
+    alert("Không tìm thấy vé");
+    return (location.href = "/frontend/trangchu/index.html");
+  }
 
-  if (!ticket || !lotId || !spot) {
-    alert("Không tìm thấy thông tin vé");
-    window.location.href = "/frontend/trangchu/index.html";
+  const res = await fetch("http://localhost:5000/api/qr/verify", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ticket }),
+  });
+
+  const result = await res.json();
+  if (!res.ok) {
+    alert(result.msg);
     return;
   }
 
-  // ===== GÁN DỮ LIỆU =====
-  document.getElementById("ticketCode").textContent = ticket;
-  document.getElementById("spotNumber").textContent = spot;
-  document.getElementById("parkingName").textContent =
-    "Bãi xe Trường Chinh - Hà Nội";
+  const d = result.data;
 
-  const start = new Date();
-  const end = new Date(start.getTime() + 3 * 60 * 60 * 1000); // +3 giờ
-
-  document.getElementById("startTime").textContent =
-    start.toLocaleString("vi-VN");
-  document.getElementById("endTime").textContent = end.toLocaleString("vi-VN");
-
-  // ===== QR CODE =====
-  const qrData = JSON.stringify({
-    ticket,
-    lotId,
-    spot,
-    type: "SMART_PARKING",
-  });
+  document.getElementById("ticketCode").textContent = d.ticket;
+  document.getElementById("spotNumber").textContent = d.spot_number;
+  document.getElementById("startTime").textContent = new Date(
+    d.start_time
+  ).toLocaleString("vi-VN");
+  document.getElementById("endTime").textContent = new Date(
+    d.end_time
+  ).toLocaleString("vi-VN");
 
   document.getElementById("qrTicket").src =
-    "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
-    encodeURIComponent(qrData);
+    "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
+    encodeURIComponent(d.ticket);
 });
 
-/* ====== LƯU VÉ (CHỈ CHỤP VÉ) ====== */
+/* ===== SAVE ===== */
 function saveTicket() {
   const actions = document.querySelector(".ticket-actions");
   actions.style.display = "none";
 
-  const ticket = document.getElementById("ticket-card");
-
-  html2canvas(ticket, {
-    scale: 2,
-    useCORS: true,
-  }).then((canvas) => {
-    const link = document.createElement("a");
-    link.download = `ticket_${Date.now()}.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-
-    actions.style.display = "flex";
-  });
+  html2canvas(document.getElementById("ticket-card"), { scale: 2 }).then(
+    (canvas) => {
+      const a = document.createElement("a");
+      a.download = `ticket_${Date.now()}.png`;
+      a.href = canvas.toDataURL();
+      a.click();
+      actions.style.display = "flex";
+    }
+  );
 }
 
-/* ====== TẢI RIÊNG QR ====== */
-function downloadQR() {
-  const qr = document.getElementById("qrTicket");
-  const link = document.createElement("a");
-  link.href = qr.src;
-  link.download = "qr_ticket.png";
-  link.click();
-}
-
-/* ====== TRANG CHỦ ====== */
 function goHome() {
-  window.location.href = "/frontend/trangchu/index.html";
+  location.href = "/frontend/trangchu/index.html";
 }

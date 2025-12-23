@@ -1,9 +1,11 @@
 const API = "http://localhost:5000/api";
 let baidoDangHienThi = [];
 let cancelMode = false;
+
 let selectedLotId = null;
 let selectedSpotNumber = null;
-
+const countdownTimers = {};
+/* ================= KIỂM TRA ĐĂNG NHẬP ================= */
 function isLoggedIn() {
   const token = localStorage.getItem("sp_token");
   if (!token || token === "undefined" || token === "null") return false;
@@ -70,6 +72,11 @@ function filterParking(value) {
 async function showSpots(parkingLotId, totalSpots) {
   cancelMode = false;
 
+  selectedLotId = parkingLotId;
+
+  Object.values(countdownTimers).forEach(clearInterval);
+  for (const k in countdownTimers) delete countdownTimers[k];
+
   document.getElementById("parkingList").style.display = "none";
   document.getElementById("searchBar").style.display = "none";
   document.getElementById("legend").style.display = "flex";
@@ -86,7 +93,11 @@ async function showSpots(parkingLotId, totalSpots) {
     pending = 0;
 
   data.forEach((s) => {
-    spotMap[s.spot_number] = s.status;
+    spotMap[s.spot_number] = {
+      status: s.status,
+      expired_at: s.expired_at,
+    };
+
     if (s.status === "PAID") paid++;
     if (s.status === "PENDING") pending++;
   });
@@ -107,11 +118,12 @@ async function showSpots(parkingLotId, totalSpots) {
     const spot = document.createElement("div");
     spot.className = "spot";
     spot.textContent = i;
-
-    if (spotMap[i] === "PAID") {
+    spot.dataset.spotNumber = i;
+    spot.dataset.lotId = parkingLotId;
+    if (spotMap[i]?.status === "PAID") {
       spot.classList.add("occupied");
       spot.onclick = () => cancelMode && confirmCancel(parkingLotId, i, "PAID");
-    } else if (spotMap[i] === "PENDING") {
+    } else if (spotMap[i]?.status === "PENDING") {
       spot.classList.add("free", "pending");
 
       spot.onclick = () => {
@@ -141,6 +153,13 @@ async function showSpots(parkingLotId, totalSpots) {
     }
 
     (i <= half ? zoneA : zoneB).appendChild(spot);
+    // ===== START COUNTDOWN KHI RENDER Ô =====
+    // ===== START COUNTDOWN KHI RENDER Ô =====
+    const spotInfo = spotMap[i];
+
+    if (spotInfo && spotInfo.expired_at && spotInfo.status === "PENDING") {
+      startCountdown(i, spotInfo.expired_at);
+    }
   }
 }
 function openReserveForm(lotId, spotNumber) {
@@ -234,7 +253,6 @@ async function confirmReserveInfo() {
   closeReserveForm();
   document.getElementById("paymentModal").style.display = "flex";
 }
-
 
 /* ================= THANH TOÁN ================= */
 function proceedToPayment() {
@@ -405,6 +423,117 @@ function showToast(message) {
 
 /* ================= SOCKET ================= */
 const socket = io("http://localhost:5000");
-socket.on("spot-freed", () => {
-  showToast("🚗 Có chỗ đỗ vừa được giải phóng!");
+socket.on("spot-expired", (data) => {
+  if (Number(data.parking_lot_id) !== Number(selectedLotId)) return;
+
+  const spotEl = document.querySelector(
+    `.spot[data-spot-number="${data.spot_number}"]`
+  );
+
+  if (!spotEl || !spotEl.classList.contains("pending")) return;
+
+  showToast(`⛔ Chỗ ${data.spot_number} đã hết giờ`);
+  stopCountdownAndFreeSpot(data.spot_number);
 });
+
+socket.on("expire-warning", (data) => {
+  if (Number(data.parking_lot_id) !== Number(selectedLotId)) return;
+
+  showToast(`⚠️ Chỗ ${data.spot_number} sắp hết hạn`);
+
+  startCountdown(data.spot_number, data.expired_at);
+});
+
+function startCountdown(spotNumber, expiredAt) {
+  if (countdownTimers[spotNumber]) return;
+
+  const spotEl = document.querySelector(
+    `.spot[data-spot-number="${spotNumber}"]`
+  );
+  if (!spotEl) return;
+  if (!spotEl.classList.contains("pending")) return;
+
+  const oldLabel = spotEl.querySelector(".countdown");
+  if (oldLabel) oldLabel.remove();
+
+  const label = document.createElement("div");
+  label.className = "countdown";
+  spotEl.appendChild(label);
+
+  let warned60 = false;
+  let warned30 = false;
+  let warned10 = false;
+
+  countdownTimers[spotNumber] = setInterval(() => {
+    const remain = Math.floor((new Date(expiredAt) - new Date()) / 1000);
+
+    if (remain <= 0) {
+      clearInterval(countdownTimers[spotNumber]);
+      delete countdownTimers[spotNumber];
+      label.remove();
+
+      spotEl.className = "spot free";
+      return;
+    }
+
+    label.textContent = remain + "s";
+
+    // ===== RESET MÀU =====
+    spotEl.classList.remove("level-60", "level-30", "level-10");
+
+    // ===== 60 GIÂY =====
+    if (remain <= 60 && remain > 30) {
+      spotEl.classList.add("level-60");
+      if (!warned60) {
+        playSound("warningSound");
+        warned60 = true;
+      }
+    }
+
+    // ===== 30 GIÂY =====
+    if (remain <= 30 && remain > 10) {
+      spotEl.classList.add("level-30");
+      if (!warned30) {
+        playSound("warningSound");
+        warned30 = true;
+      }
+    }
+
+    // ===== 10 GIÂY =====
+    if (remain <= 10) {
+      spotEl.classList.add("level-10");
+      if (!warned10) {
+        playSound("dangerSound");
+        warned10 = true;
+      }
+    }
+  }, 1000);
+}
+
+function stopCountdownAndFreeSpot(spotNumber) {
+  if (countdownTimers[spotNumber]) {
+    clearInterval(countdownTimers[spotNumber]);
+    delete countdownTimers[spotNumber];
+  }
+
+  const spotEl = document.querySelector(
+    `.spot[data-spot-number="${spotNumber}"]`
+  );
+
+  if (!spotEl) return;
+
+  spotEl.classList.remove("occupied", "pending", "danger", "pending-expire");
+
+  const label = spotEl.querySelector(".countdown");
+  if (label) label.remove();
+
+  spotEl.classList.add("free");
+}
+// sound
+function playSound(id) {
+  const sound = document.getElementById(id);
+  if (!sound) return;
+
+  sound.currentTime = 0;
+  sound.play().catch(() => {});
+}

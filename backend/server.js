@@ -22,27 +22,25 @@ io.on("connection", (socket) => {
 });
 
 // ===== JOBS =====
-const clearExpired = require("./jobs/clearExpired");
-const notifyExpire = require("./jobs/notifyExpire");
+// const clearExpired = require("./jobs/clearExpired");
+// const notifyExpire = require("./jobs/notifyExpire");
+// const expireParking = require("./jobs/expireParking");
 
-// 🔁 Xóa vé hết hạn
+// setInterval(() => expireParking(io), 60 * 1000);
+// setInterval(() => clearExpired(io), 60 * 1000);
+// setInterval(async () => {
+//   const pool = await poolPromise;
+//   await notifyExpire(io, pool);
+// }, 60 * 1000);
+const handlePendingExpire = require("./jobs/handlePendingExpire");
+
 setInterval(async () => {
   try {
-    await clearExpired(io);
+    await handlePendingExpire(io);
   } catch (err) {
-    console.error("❌ clearExpired error:", err);
+    console.error("Expire job error:", err);
   }
-}, 60 * 1000);
-
-// 🔔 Nhắc sắp hết hạn
-setInterval(async () => {
-  try {
-    const pool = await poolPromise;
-    await notifyExpire(io, pool);
-  } catch (err) {
-    console.error("❌ notifyExpire error:", err);
-  }
-}, 60 * 1000);
+}, 1000); // 🔥 1 GIÂY
 
 // ===== START SERVER =====
 const PORT = process.env.PORT || 5000;

@@ -256,9 +256,16 @@
         >
       </div>
     </footer>
+    <audio id="warningSound" preload="auto">
+      <source src="/frontend/sounds/warning.mp3" type="audio/mpeg" />
+    </audio>
+
+    <audio id="dangerSound" preload="auto">
+      <source src="/frontend/sounds/danger.mp3" type="audio/mpeg" />
+    </audio>
+
     <div id="toast-container"></div>
     <script src="http://localhost:5000/socket.io/socket.io.js"></script>
-
     <script src="./pay.js"></script>
   </body>
 </html>

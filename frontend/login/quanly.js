@@ -2,9 +2,10 @@
 (function () {
   document.addEventListener("DOMContentLoaded", () => {
     const token = localStorage.getItem("sp_token");
+    const lotId = localStorage.getItem("managed_parking_lot");
 
-    if (!token) {
-      alert("Vui lòng đăng nhập trước!");
+    if (!token || !lotId) {
+      alert("Không có quyền truy cập bãi");
       location.href = "dangnhap.html";
     }
   });
@@ -12,7 +13,14 @@
 
 /* ====================== UTIL ====================== */
 const API = "http://localhost:5000/api/parking";
-const PARKING_LOT_ID_DEFAULT = 11; // <— chỉnh id bãi của bạn
+const PARKING_LOT_ID_DEFAULT = (() => {
+  const id = Number(localStorage.getItem("managed_parking_lot"));
+  if (!id) {
+    alert("Chưa chọn bãi đỗ để quản lý");
+    location.href = "chonbaido.html";
+  }
+  return id;
+})();
 
 const $ = (q, ctx = document) => ctx.querySelector(q);
 const $$ = (q, ctx = document) => Array.from(ctx.querySelectorAll(q));
@@ -151,11 +159,17 @@ $("#capture").addEventListener("click", async (e) => {
 
   btn.disabled = true;
   try {
+    const token = localStorage.getItem("sp_token");
+
     const res = await fetch(API + (currentLane === "vao" ? "/in" : "/out"), {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(body),
     });
+
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {

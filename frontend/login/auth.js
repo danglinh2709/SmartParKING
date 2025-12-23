@@ -47,8 +47,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.role === "tenant") {
           location.href = "../pay/pay.html";
-        } else {
-          location.href = "quanly.html";
+        } else if (data.role === "staff") {
+          location.href = "chonbaido.html";
         }
       } catch (err) {
         $("loginPwdErr").textContent = "Không kết nối được server";

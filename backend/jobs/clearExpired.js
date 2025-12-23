@@ -3,21 +3,23 @@ const poolPromise = require("../models/db");
 module.exports = async function clearExpired(io) {
   try {
     const pool = await poolPromise;
-
     const expired = await pool.request().query(`
-      DELETE FROM ParkingReservation
-      OUTPUT deleted.parking_lot_id, deleted.spot_number
+      UPDATE ParkingReservation
+      SET status = 'EXPIRED'
+      OUTPUT inserted.parking_lot_id, inserted.spot_number
       WHERE status = 'PENDING'
-      AND expired_at < GETDATE()
+        AND expired_at < GETDATE()
     `);
 
     if (expired.recordset.length > 0) {
-      console.log("🧹 Hết hạn, giải phóng:", expired.recordset);
+      console.log("🧹 Pending expired:", expired.recordset);
 
-      // 🔔 BẮN SOCKET REALTIME
-      if (io) {
-        io.emit("spot-freed", expired.recordset);
-      }
+      expired.recordset.forEach((r) => {
+        io.emit("spot-expired", {
+          parking_lot_id: r.parking_lot_id,
+          spot_number: r.spot_number,
+        });
+      });
     }
   } catch (err) {
     console.error("❌ clearExpired error:", err);
