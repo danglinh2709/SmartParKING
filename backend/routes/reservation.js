@@ -56,7 +56,7 @@ router.post("/", auth, async (req, res) => {
 
     res.json({ ticket, expires_in: 600 });
   } catch (err) {
-    console.error("❌ reservation error:", err);
+    console.error("reservation error:", err);
     res.status(500).json({ msg: "Lỗi server" });
   }
 });
@@ -109,7 +109,7 @@ router.post("/cancel", async (req, res) => {
 
     res.json({ msg: "Huỷ đặt chỗ thành công" });
   } catch (err) {
-    console.error("❌ Lỗi huỷ đặt chỗ:", err);
+    console.error("Lỗi huỷ đặt chỗ:", err);
     res.status(500).json({ msg: "Lỗi server" });
   }
 });

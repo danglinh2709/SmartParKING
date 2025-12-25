@@ -1,25 +1,28 @@
 module.exports = async function expireParking(io, pool) {
+  // console.log("⏳ expireParking job tick");
   try {
-    const result = await pool.request().query(`
+    const expired = await pool.request().query(`
       SELECT ticket, parking_lot_id, spot_number
       FROM ParkingReservation
-      WHERE status = 'PAID'
-        AND end_time <= GETDATE()
+      WHERE status = 'PARKING'
+        AND parking_expired_at < GETDATE()
     `);
 
-    for (const r of result.recordset) {
-      await pool.request().input("ticket", r.ticket).query(`
-          UPDATE ParkingReservation
-          SET status = 'EXPIRED'
-          WHERE ticket = @ticket
-        `);
+    if (!expired.recordset.length) return;
 
-      io.emit("spot-freed", {
-        parking_lot_id: r.parking_lot_id,
-        spot_number: r.spot_number,
-      });
+    await pool.request().query(`
+      UPDATE ParkingReservation
+      SET status = 'EXPIRED'
+      WHERE status = 'PARKING'
+        AND parking_expired_at < GETDATE()
+    `);
+
+    if (io) {
+      io.emit("spot-freed", expired.recordset);
     }
+
+    console.log("🚗 Hết giờ đỗ, giải phóng:", expired.recordset);
   } catch (err) {
-    console.error("expireParking job error:", err);
+    console.error("❌ expireParking job error:", err);
   }
 };

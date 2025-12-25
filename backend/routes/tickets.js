@@ -14,22 +14,21 @@ router.post("/verify", async (req, res) => {
     const pool = await poolPromise;
 
     const result = await pool.request().input("ticket", ticket).query(`
-      SELECT status, expired_at
-      FROM ParkingReservation
-      WHERE ticket = @ticket
-    `);
+  SELECT status, parking_expired_at
+  FROM ParkingReservation
+  WHERE ticket = @ticket
+`);
 
-    if (!result.recordset.length) {
-      return res.status(404).json({ msg: "❌ Vé không tồn tại" });
-    }
-
-    const { status, expired_at } = result.recordset[0];
+    const { status, parking_expired_at } = result.recordset[0];
 
     if (status === "PENDING") {
       return res.status(400).json({ msg: "❌ Vé chưa thanh toán" });
     }
 
-    if (status === "EXPIRED" || new Date(expired_at) < new Date()) {
+    if (
+      status === "EXPIRED" ||
+      (parking_expired_at && new Date(parking_expired_at) < new Date())
+    ) {
       return res.status(400).json({ msg: "❌ Vé đã hết hạn" });
     }
 
@@ -51,14 +50,14 @@ router.get("/:ticket", async (req, res) => {
       SELECT 
         pr.ticket,
         pr.spot_number,
-        pr.start_time,
-        pr.expired_at,
+        pr.created_at,
+        pr.parking_expired_at AS expired_at,
         pr.status,
         pl.name AS parking_name
       FROM ParkingReservation pr
       JOIN ParkingLot pl ON pr.parking_lot_id = pl.id
       WHERE pr.ticket = @ticket
-        AND pr.status = 'PAID'
+        AND pr.status IN ('PARKING', 'PAID', 'EXPIRED')
     `);
 
     if (!result.recordset.length) {

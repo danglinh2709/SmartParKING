@@ -2,7 +2,7 @@ const http = require("http");
 require("dotenv").config();
 
 const app = require("./app");
-const poolPromise = require("./models/db"); // ✅ BẮT BUỘC
+const poolPromise = require("./models/db");
 
 // ===== CREATE SERVER =====
 const server = http.createServer(app);
@@ -26,34 +26,38 @@ const clearExpired = require("./jobs/clearExpired");
 const notifyExpire = require("./jobs/notifyExpire");
 const expireParking = require("./jobs/expireParking");
 
-// 🔁 Xóa vé hết hạn
-setInterval(async () => {
-  try {
-    await clearExpired(io);
-  } catch (err) {
-    console.error("❌ clearExpired error:", err);
-  }
-}, 60 * 1000);
+// ================== SCHEDULER ==================
+(async function startJobs() {
+  console.log("⏰ Parking jobs scheduler started");
 
-// 🔔 Nhắc sắp hết hạn
-setInterval(async () => {
-  try {
-    const pool = await poolPromise;
-    await notifyExpire(io, pool);
-  } catch (err) {
-    console.error("❌ notifyExpire error:", err);
-  }
-}, 60 * 1000);
+  // 🔁 1 phút: xoá vé giữ chỗ (PENDING) hết hạn
+  setInterval(async () => {
+    try {
+      await clearExpired(io);
+    } catch (err) {
+      console.error("❌ clearExpired error:", err);
+    }
+  }, 60 * 1000);
 
-// ⛔ Giải phóng chỗ khi hết giờ đỗ
-setInterval(async () => {
-  try {
-    const pool = await poolPromise;
-    await expireParking(io, pool);
-  } catch (err) {
-    console.error("❌ expireParking error:", err);
-  }
-}, 60 * 1000);
+  // 🔔 30 giây: thông báo sắp hết giờ đỗ
+  setInterval(async () => {
+    try {
+      await notifyExpire(io);
+    } catch (err) {
+      console.error("❌ notifyExpire error:", err);
+    }
+  }, 30 * 1000);
+
+  // ⛔ 1 phút: giải phóng chỗ khi hết giờ đỗ
+  setInterval(async () => {
+    try {
+      const pool = await poolPromise;
+      await expireParking(io, pool);
+    } catch (err) {
+      console.error("❌ expireParking error:", err);
+    }
+  }, 60 * 1000);
+})();
 
 // ===== START SERVER =====
 const PORT = process.env.PORT || 5000;

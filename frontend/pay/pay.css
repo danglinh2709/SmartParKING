@@ -258,62 +258,7 @@ nav ul li a:hover {
   background: #dc2626;
 }
 
-/* ===== ZONE ===== */
-.zones-wrapper {
-  display: flex;
-  justify-content: center;
-  gap: 80px;
-  margin-bottom: 60px;
-}
-
-.zone h3 {
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.spot-grid {
-  display: grid;
-  grid-template-columns: repeat(10, 44px);
-  gap: 12px;
-  justify-content: center;
-}
-
-/* ===== SPOT ===== */
-.spot {
-  width: 40px;
-  height: 40px;
-  margin: 6px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-weight: bold;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.spot.free {
-  background-color: #2ecc71;
-  color: white;
-}
-
-.spot.occupied {
-  background: #dc2626;
-  cursor: not-allowed;
-}
-.spot.pending {
-  background: #d1d5db;
-  color: #1f2937;
-  cursor: not-allowed;
-}
-
-.spot.selected {
-  background: #2563eb;
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.4);
-}
-
-.spot.free:hover {
-  transform: scale(1.12);
-}
+/* ===== PAYMENT MODAL ===== */
 .payment-modal {
   position: fixed;
   top: 0;
@@ -400,83 +345,143 @@ nav ul li a:hover {
 
 /* form nhập thông tin khi đặt chỗ */
 /* FORM ĐẶT CHỖ */
+/* ===== MODAL OVERLAY ===== */
 .reserve-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(4px);
   display: none;
   justify-content: center;
   align-items: center;
-  z-index: 2000;
+  z-index: 3000;
 }
 
+/* ===== FORM CARD ===== */
 .reserve-content {
-  background: #fff;
-  width: 380px;
-  padding: 20px;
-  border-radius: 10px;
-  animation: zoomIn 0.25s ease;
+  background: #ffffff;
+  width: 420px;
+  max-width: 92%;
+  padding: 26px 28px;
+  border-radius: 18px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+  animation: scaleIn 0.25s ease;
 }
 
+/* ===== TITLE ===== */
 .reserve-content h3 {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 22px;
+  font-size: 20px;
+  font-weight: 700;
 }
 
-.reserve-content label {
-  font-weight: bold;
-  margin-top: 10px;
-  display: block;
+/* ===== FORM GROUP ===== */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
 }
 
-.reserve-content input {
-  width: 100%;
-  padding: 8px;
-  margin-top: 4px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+.form-group label {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
 }
 
+.form-group input {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  font-size: 14px;
+  background: #fff;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #22c55e;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+}
+
+/* ===== GIỜ VÀO / GIỜ RA ===== */
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+/* ===== PRICE ===== */
 .price-box {
-  margin-top: 15px;
-  padding: 10px;
-  background: #f0f9ff;
-  border-radius: 6px;
-  font-weight: bold;
-  color: #0369a1;
+  margin: 18px 0;
+  padding: 14px;
+  background: #f0fdf4;
+  border-radius: 12px;
+  font-weight: 700;
+  color: #15803d;
+  text-align: center;
+  font-size: 15px;
 }
 
+/* ===== ACTIONS ===== */
 .reserve-actions {
   display: flex;
   justify-content: space-between;
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .btn-cancel {
   background: #e5e7eb;
+  color: #111827;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: #d1d5db;
 }
 
 .btn-confirm {
   background: #22c55e;
   color: white;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 10px 26px;
+  border-radius: 10px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-@keyframes zoomIn {
+.btn-confirm:hover {
+  background: #16a34a;
+}
+
+/* ===== ANIMATION ===== */
+@keyframes scaleIn {
   from {
-    transform: scale(0.9);
+    transform: scale(0.92);
     opacity: 0;
   }
   to {
     transform: scale(1);
     opacity: 1;
+  }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 480px) {
+  .reserve-content {
+    padding: 22px 18px;
+  }
+
+  .form-row {
+    flex-direction: column;
   }
 }
 
@@ -572,4 +577,150 @@ nav ul li a:hover {
 .back-to-top {
   color: white;
   text-decoration: none;
+}
+
+/* ===== MAP WRAPPER ===== */
+.parking-map-wrapper {
+  width: 100%;
+  background: linear-gradient(#f9fafb, #f3f4f6);
+  border-radius: 18px;
+  padding: 30px 20px;
+}
+
+/* ===== MAP ===== */
+.parking-map {
+  display: flex;
+  align-items: stretch;
+  gap: 40px;
+  min-width: 1200px;
+  position: relative;
+}
+
+/* ===== LANE XE ===== */
+.lane {
+  width: 90px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #9ca3af,
+    #9ca3af 18px,
+    #f3f4f6 18px,
+    #f3f4f6 36px
+  );
+  border-radius: 14px;
+  position: relative;
+  box-shadow: inset 0 0 0 2px #e5e7eb;
+}
+
+.lane::after {
+  content: "⬆  HƯỚNG XE";
+  position: sticky;
+  top: 20px;
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.lane.right::after {
+  content: "⬇";
+  top: auto;
+  bottom: 12px;
+}
+
+/* ===== ZONE ===== */
+.zones-wrapper {
+  display: flex;
+  gap: 60px;
+}
+
+.zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.zone h3 {
+  background: #111827;
+  color: white;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 14px;
+}
+/* ===== SPOT GRID ===== */
+.spot-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 56px);
+  gap: 14px 18px;
+}
+
+/* ===== SPOT ===== */
+.spot {
+  width: 56px; /* nhỏ hơn */
+  height: 96px; /* giống xe thật */
+  border-radius: 8px;
+  background: #22c55e;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+.spot:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+/* ===== TRẠNG THÁI ===== */
+.spot.free {
+  background: #22c55e;
+}
+.spot.pending {
+  background: #facc15;
+  color: #111;
+}
+.spot.parking {
+  background: #3b82f6;
+}
+.spot.expired {
+  background: #ef4444;
+}
+
+/* ===== LABEL ===== */
+.spot-number {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ===== COUNTDOWN ===== */
+.countdown {
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(253, 253, 253, 0.35);
+  padding: 3px 8px;
+  border-radius: 8px;
+}
+
+.spot.parking {
+  box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.25);
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 768px) {
+  .parking-map {
+    gap: 20px;
+  }
+
+  .lane {
+    width: 60px;
+  }
+
+  .spot-grid {
+    --cols: 5;
+  }
 }

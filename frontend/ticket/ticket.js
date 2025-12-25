@@ -1,7 +1,8 @@
+let ticketLoaded = false; // ✅ GLOBAL
+
 document.addEventListener("DOMContentLoaded", async () => {
   const API = "http://localhost:5000/api/tickets";
 
-  /* ====== LẤY MÃ VÉ TỪ FORM TRƯỚC ====== */
   const ticket = localStorage.getItem("parking_ticket");
 
   if (!ticket) {
@@ -11,9 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    /* ====== GỌI API LẤY THÔNG TIN VÉ ====== */
     const res = await fetch(`${API}/${ticket}`);
-
     const data = await res.json();
 
     if (!res.ok) {
@@ -27,19 +26,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("parkingName").textContent = data.parking_name;
     document.getElementById("spotNumber").textContent = data.spot_number;
     document.getElementById("startTime").textContent = formatTime(
-      data.start_time
+      data.created_at
     );
     document.getElementById("endTime").textContent = formatTime(
       data.expired_at
     );
 
+    /* ====== ĐÁNH DẤU ĐÃ LOAD XONG ====== */
+    ticketLoaded = true; // ✅ DÒNG QUAN TRỌNG
+
     /* ====== TẠO QR ====== */
     const qrText = `
-Mã vé: ${data.ticket}
-Bãi xe: ${data.parking_name}
-Vị trí: ${data.spot_number}
-Vào: ${formatTime(data.start_time)}
-Hết hạn: ${formatTime(data.expired_at)}
+      Mã vé: ${data.ticket}
+      Bãi xe: ${data.parking_name}
+      Vị trí: ${data.spot_number}
+      Vào: ${formatTime(data.created_at)}
+      Hết hạn: ${formatTime(data.expired_at)}
     `;
 
     document.getElementById(
@@ -53,10 +55,9 @@ Hết hạn: ${formatTime(data.expired_at)}
   }
 });
 
-/* ====== FORMAT THỜI GIAN ====== */
+/* ====== FORMAT TIME ====== */
 function formatTime(time) {
-  const d = new Date(time);
-  return d.toLocaleString("vi-VN");
+  return new Date(time).toLocaleString("vi-VN");
 }
 
 /* ====== LƯU VÉ ====== */
@@ -94,4 +95,43 @@ function downloadQR() {
 /* ====== TRANG CHỦ ====== */
 function goHome() {
   window.location.href = "/frontend/trangchu/index.html";
+}
+/* ====== IN VÉ ====== */
+function printTicket() {
+  if (!ticketLoaded) {
+    alert("⏳ Vé đang tải, vui lòng chờ 1–2 giây");
+    return;
+  }
+  const ticket = document.getElementById("ticket-card");
+  const printWindow = window.open("", "_blank");
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>In Vé Gửi Xe</title>
+        <style>
+          body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+          }
+          #ticket-card {
+            width: 400px;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 10px;
+            font-family: Arial, sans-serif;
+          }
+        </style>
+      </head>
+      <body>
+        ${ticket.outerHTML}
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
 }

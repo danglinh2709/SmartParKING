@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const ticket = localStorage.getItem("parking_ticket");
   if (!ticket) {
-    alert("❌ Không có vé hợp lệ");
+    alert(" Không có vé hợp lệ");
     window.location.href = "/frontend/trangchu/index.html";
     return;
   }
@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (remain <= 0) {
       clearInterval(timer);
-      alert("⛔ Hết thời gian thanh toán – vé bị huỷ");
+      alert("Hết thời gian thanh toán – vé bị huỷ");
 
       try {
         await fetch(`${API}/reservations/expire`, {
@@ -70,13 +70,23 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= PAY ================= */
   window.payNow = async function () {
     try {
+      const hours = localStorage.getItem("parking_hours");
+
+      if (!hours) {
+        alert("Thiếu thời gian gửi xe, vui lòng đặt chỗ lại");
+        return;
+      }
+
       const res = await fetch(`${API}/payment`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ticket }), // ticket đã có sẵn
+        body: JSON.stringify({
+          ticket,
+          hours: Number(hours), // ✅ BẮT BUỘC
+        }),
       });
 
       const data = await res.json();
@@ -89,17 +99,16 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       if (!res.ok) {
-        alert(data.msg || "❌ Thanh toán thất bại");
+        alert(data.msg || " Thanh toán thất bại");
         return;
       }
 
-      alert("✅ Thanh toán thành công");
+      alert("✅ Thanh toán thành công, xe đang được gửi!");
 
-      // ✅ CHUYỂN TRANG KÈM TICKET
       window.location.href = `/frontend/ticket/ticket.html?ticket=${ticket}`;
     } catch (err) {
       console.error(err);
-      alert("❌ Không thể kết nối server");
+      alert(" Không thể kết nối server");
     }
   };
 });
@@ -107,10 +116,12 @@ document.addEventListener("DOMContentLoaded", () => {
 /* ================= SOCKET ================= */
 const socket = io("http://localhost:5000");
 
-socket.on("expire-warning", (ticket) => {
+socket.on("parking-expiring", (list) => {
   const myTicket = localStorage.getItem("parking_ticket");
-  if (ticket === myTicket) {
+
+  const found = list.find((s) => s.ticket === myTicket);
+
+  if (found) {
     alert("⏰ Vé gửi xe sắp hết hạn! Bạn nên gia hạn.");
   }
 });
-//

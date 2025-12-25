@@ -29,17 +29,18 @@ router.get("/", async (req, res) => {
 router.get("/:id/spot-status", async (req, res) => {
   try {
     const pool = await poolPromise;
-    const result = await pool.request().input("parking_lot_id", req.params.id)
+
+    const result = await pool.request().input("id", req.params.id) // ✅ KHỚP @id
       .query(`
-        SELECT spot_number, status
+        SELECT spot_number, status, parking_expired_at
         FROM ParkingReservation
-        WHERE parking_lot_id = @parking_lot_id
-        AND status IN ('PENDING','PAID')
+        WHERE parking_lot_id = @id
+          AND status IN ('PENDING','PAID','PARKING')
       `);
 
     res.json(result.recordset);
   } catch (err) {
-    console.error(err);
+    console.error("spot-status error:", err);
     res.status(500).json({ msg: "Lỗi server" });
   }
 });

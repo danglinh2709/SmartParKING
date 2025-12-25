@@ -142,44 +142,64 @@
     </div>
 
     <!-- KHU ĐỖ -->
-    <div class="zones-wrapper" id="legend" style="display: none">
-      <div class="zone" id="zoneA-wrapper">
-        <h3>Khu A</h3>
-        <div class="spot-grid" id="zoneA"></div>
-      </div>
+    <div class="parking-map-wrapper">
+      <div class="parking-map" id="parkingMap">
+        <!-- LANE TRÁI -->
+        <div class="lane vertical left"></div>
 
-      <div class="zone" id="zoneB-wrapper">
-        <h3>Khu B</h3>
-        <div class="spot-grid" id="zoneB"></div>
+        <div class="zones-wrapper" id="legend" style="display: none">
+          <div class="zone" id="zoneA-wrapper">
+            <h3>Khu A</h3>
+            <div class="spot-grid" id="zoneA"></div>
+          </div>
+
+          <div class="zone" id="zoneB-wrapper">
+            <h3>Khu B</h3>
+            <div class="spot-grid" id="zoneB"></div>
+          </div>
+        </div>
+
+        <!-- LANE PHẢI -->
+        <div class="lane vertical right"></div>
       </div>
     </div>
-    <!-- FORM ĐẶT CHỖ -->
+
     <div class="reserve-modal" id="reserveFormModal">
       <div class="reserve-content">
-        <h3>Thông tin đặt chỗ</h3>
+        <h3>🚗 Thông tin đặt chỗ</h3>
 
-        <label>Biển số xe</label>
-        <input id="plateInput" placeholder="VD: 30A-12345" />
+        <div class="form-group">
+          <label>Biển số xe</label>
+          <input id="plateInput" placeholder="VD: 30A-12345" />
+        </div>
 
-        <label>Số điện thoại</label>
-        <input id="phoneInput" placeholder="VD: 098xxxxxxx" />
+        <div class="form-group">
+          <label>Số điện thoại</label>
+          <input id="phoneInput" placeholder="VD: 098xxxxxxx" />
+        </div>
 
-        <label>Giờ vào</label>
-        <input
-          type="datetime-local"
-          id="startTimeInput"
-          onchange="calculatePrice()"
-        />
-
-        <label>Giờ ra</label>
-        <input
-          type="datetime-local"
-          id="endTimeInput"
-          onchange="calculatePrice()"
-        />
+        <div class="form-row">
+          <div class="form-group">
+            <label>Giờ vào</label>
+            <input
+              type="datetime-local"
+              id="startTimeInput"
+              onchange="calculatePrice()"
+            />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Giờ ra</label>
+          <input
+            type="datetime-local"
+            id="endTimeInput"
+            onchange="calculatePrice()"
+          />
+        </div>
 
         <div class="price-box">
-          💰 Tổng tiền: <span id="totalPrice">0</span> VNĐ
+          💰 Tổng tiền:
+          <span id="totalPrice">0</span> VNĐ
         </div>
 
         <div class="reserve-actions">

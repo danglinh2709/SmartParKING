@@ -3,6 +3,9 @@ let baidoDangHienThi = [];
 let cancelMode = false;
 let selectedLotId = null;
 let selectedSpotNumber = null;
+let currentLotId = null;
+let currentTotalSpots = null;
+const parkingCountdowns = {};
 
 function isLoggedIn() {
   const token = localStorage.getItem("sp_token");
@@ -85,10 +88,20 @@ async function showSpots(parkingLotId, totalSpots) {
   let paid = 0,
     pending = 0;
 
+  Object.keys(parkingCountdowns).forEach((k) => delete parkingCountdowns[k]);
+
   data.forEach((s) => {
     spotMap[s.spot_number] = s.status;
-    if (s.status === "PAID") paid++;
+
+    if (s.status === "PAID" || s.status === "PARKING") paid++;
     if (s.status === "PENDING") pending++;
+
+    // LƯU THỜI GIAN HẾT HẠN ĐỖ XE
+    if (s.status === "PARKING" && s.parking_expired_at) {
+      parkingCountdowns[s.spot_number] = new Date(
+        s.parking_expired_at
+      ).getTime();
+    }
   });
 
   document.getElementById("totalSpots").textContent = totalSpots;
@@ -102,13 +115,27 @@ async function showSpots(parkingLotId, totalSpots) {
   zoneB.innerHTML = "";
 
   const half = Math.ceil(totalSpots / 2);
+  currentLotId = parkingLotId;
+  currentTotalSpots = totalSpots;
 
   for (let i = 1; i <= totalSpots; i++) {
     const spot = document.createElement("div");
     spot.className = "spot";
     spot.textContent = i;
 
-    if (spotMap[i] === "PAID") {
+    if (spotMap[i] === "PARKING") {
+      spot.classList.add("occupied", "parking");
+
+      // COUNTDOWN
+      const cd = document.createElement("div");
+      cd.className = "countdown";
+      cd.id = `cd-${i}`;
+      cd.textContent = "--:--";
+      spot.appendChild(cd);
+
+      spot.onclick = () =>
+        cancelMode && confirmCancel(parkingLotId, i, "PARKING");
+    } else if (spotMap[i] === "PAID") {
       spot.classList.add("occupied");
       spot.onclick = () => cancelMode && confirmCancel(parkingLotId, i, "PAID");
     } else if (spotMap[i] === "PENDING") {
@@ -197,6 +224,7 @@ async function confirmReserveInfo() {
   const hours = Math.ceil(
     (new Date(endTime) - new Date(startTime)) / (1000 * 60 * 60)
   );
+  localStorage.setItem("parking_hours", hours);
 
   const res = await fetch(`${API}/reservations`, {
     method: "POST",
@@ -209,8 +237,6 @@ async function confirmReserveInfo() {
       spot_number: selectedSpotNumber,
       plate,
       phone,
-      start_time: startTime,
-      end_time: endTime,
       hours,
     }),
   });
@@ -390,6 +416,34 @@ function calculatePrice() {
   const total = hours * PRICE_PER_HOUR;
   priceEl.textContent = total.toLocaleString("vi-VN");
 }
+// ================= COUNTDOWN TIMER =================
+setInterval(() => {
+  const now = Date.now();
+
+  Object.entries(parkingCountdowns).forEach(([spot, endTime]) => {
+    const el = document.getElementById(`cd-${spot}`);
+    const box = el?.closest(".spot");
+    if (!el || !box) return;
+
+    const remain = Math.floor((endTime - now) / 1000);
+
+    if (remain <= 0) {
+      el.textContent = "Hết giờ";
+      box.classList.remove("parking", "warning");
+      box.classList.add("expired");
+      return;
+    }
+
+    const m = Math.floor(remain / 60);
+    const s = remain % 60;
+    el.textContent = `${m}:${s.toString().padStart(2, "0")}`;
+
+    // ⚠️ dưới 5 phút → cảnh báo
+    if (remain <= 300) {
+      box.classList.add("warning");
+    }
+  });
+}, 1000);
 
 /* ================= TOAST ================= */
 function showToast(message) {
@@ -406,4 +460,45 @@ function showToast(message) {
 const socket = io("http://localhost:5000");
 socket.on("spot-freed", () => {
   showToast("🚗 Có chỗ đỗ vừa được giải phóng!");
+  if (currentLotId && currentTotalSpots) {
+    showSpots(currentLotId, currentTotalSpots);
+  }
+});
+
+socket.on("parking-expiring", (list) => {
+  showToast(`⏰ Có ${list.length} chỗ sắp hết giờ!`);
+});
+//
+const map = document.getElementById("parkingMap");
+
+let scale = 1;
+let originX = 0;
+let originY = 0;
+let isDragging = false;
+let startX, startY;
+
+map.addEventListener("wheel", (e) => {
+  e.preventDefault();
+  scale += e.deltaY * -0.001;
+  scale = Math.min(Math.max(0.6, scale), 1.6);
+  map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+});
+
+map.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  startX = e.clientX - originX;
+  startY = e.clientY - originY;
+  map.style.cursor = "grabbing";
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+  originX = e.clientX - startX;
+  originY = e.clientY - startY;
+  map.style.transform = `translate(${originX}px, ${originY}px) scale(${scale})`;
+});
+
+document.addEventListener("mouseup", () => {
+  isDragging = false;
+  map.style.cursor = "grab";
 });

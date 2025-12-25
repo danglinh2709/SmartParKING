@@ -14,7 +14,7 @@ module.exports = async function clearExpired(io) {
     if (expired.recordset.length > 0) {
       console.log("🧹 Hết hạn, giải phóng:", expired.recordset);
 
-      // 🔔 BẮN SOCKET REALTIME
+      //  BẮN SOCKET REALTIME
       if (io) {
         io.emit("spot-freed", expired.recordset);
       }

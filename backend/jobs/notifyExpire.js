@@ -1,16 +1,21 @@
-module.exports = async (io, pool) => {
+const poolPromise = require("../models/db");
+
+module.exports = async function notifyExpire(io) {
   try {
-    const result = await pool.request().query(`
-      SELECT ticket
+    const pool = await poolPromise;
+
+    const rs = await pool.request().query(`
+      SELECT ticket, parking_lot_id, spot_number
       FROM ParkingReservation
-      WHERE status = 'PAID'
-      AND DATEDIFF(minute, GETDATE(), expired_at) BETWEEN 0 AND 10
+      WHERE status = 'PARKING'
+        AND parking_expired_at BETWEEN
+            GETDATE() AND DATEADD(MINUTE, 5, GETDATE())
     `);
 
-    result.recordset.forEach((r) => {
-      io.emit("expire-warning", r.ticket);
-    });
+    if (rs.recordset.length && io) {
+      io.emit("parking-expiring", rs.recordset);
+    }
   } catch (err) {
-    console.error("❌ Lỗi notifyExpire:", err);
+    console.error("❌ notifyExpire error:", err);
   }
 };
