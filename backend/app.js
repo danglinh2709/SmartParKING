@@ -22,4 +22,6 @@ app.use("/api/staff", require("./routes/staff"));
 
 app.use("/api/tickets", require("./routes/tickets"));
 
+app.use("/api/manager", require("./routes/manager"));
+
 module.exports = app;

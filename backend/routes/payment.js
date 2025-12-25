@@ -14,7 +14,6 @@ router.post("/", auth, async (req, res) => {
   try {
     const pool = await poolPromise;
 
-    // 1️⃣ Check vé hợp lệ (chỉ cho PENDING)
     const check = await pool.request().input("ticket", ticket).query(`
         SELECT id
         FROM ParkingReservation
@@ -31,9 +30,9 @@ router.post("/", auth, async (req, res) => {
     // 2️⃣ Chuyển sang PARKING + set thời gian hết hạn
     await pool.request().input("ticket", ticket).input("hours", hours).query(`
         UPDATE ParkingReservation
-        SET status = 'PARKING',
-            parking_expired_at = DATEADD(HOUR, @hours, GETDATE())
-        WHERE ticket = @ticket
+SET status = 'PAID'
+WHERE ticket = @ticket
+
       `);
 
     res.json({ msg: "Thanh toán thành công" });

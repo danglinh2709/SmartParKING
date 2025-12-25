@@ -47,18 +47,19 @@ router.get("/:ticket", async (req, res) => {
     const pool = await poolPromise;
 
     const result = await pool.request().input("ticket", ticket).query(`
-      SELECT 
-        pr.ticket,
-        pr.spot_number,
-        pr.created_at,
-        pr.parking_expired_at AS expired_at,
-        pr.status,
-        pl.name AS parking_name
-      FROM ParkingReservation pr
-      JOIN ParkingLot pl ON pr.parking_lot_id = pl.id
-      WHERE pr.ticket = @ticket
-        AND pr.status IN ('PARKING', 'PAID', 'EXPIRED')
-    `);
+  SELECT 
+    pr.ticket,
+    pr.spot_number,
+    CONVERT(varchar, pr.start_time, 126) AS start_time,
+  CONVERT(varchar, pr.end_time, 126)   AS end_time,
+      
+    pr.status,
+    pl.name AS parking_name
+  FROM ParkingReservation pr
+  JOIN ParkingLot pl ON pr.parking_lot_id = pl.id
+  WHERE pr.ticket = @ticket
+    AND pr.status IN ('PENDING', 'PAID', 'PARKING', 'EXPIRED')
+`);
 
     if (!result.recordset.length) {
       return res.status(404).json({ msg: "Không tìm thấy thông tin vé" });

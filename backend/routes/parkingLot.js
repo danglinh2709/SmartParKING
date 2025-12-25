@@ -30,12 +30,12 @@ router.get("/:id/spot-status", async (req, res) => {
   try {
     const pool = await poolPromise;
 
-    const result = await pool.request().input("id", req.params.id) // ✅ KHỚP @id
-      .query(`
-        SELECT spot_number, status, parking_expired_at
+    const result = await pool.request().input("id", req.params.id).query(`
+        SELECT spot_number, status, start_time, end_time
         FROM ParkingReservation
         WHERE parking_lot_id = @id
           AND status IN ('PENDING','PAID','PARKING')
+
       `);
 
     res.json(result.recordset);

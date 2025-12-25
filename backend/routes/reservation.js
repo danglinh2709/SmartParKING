@@ -6,14 +6,22 @@ const auth = require("../middlewares/auth");
 
 // ================== ĐẶT CHỖ ==================
 router.post("/", auth, async (req, res) => {
-  const { parking_lot_id, spot_number } = req.body;
+  const { parking_lot_id, spot_number, start_time, end_time, hours } = req.body;
 
-  if (!parking_lot_id || !spot_number) {
-    return res.status(400).json({ msg: "Thiếu dữ liệu" });
+  if (
+    !parking_lot_id ||
+    !spot_number ||
+    !start_time ||
+    !end_time ||
+    !Number.isInteger(hours) ||
+    hours <= 0
+  ) {
+    return res.status(400).json({ msg: "Dữ liệu đặt chỗ không hợp lệ" });
   }
 
   try {
     const pool = await poolPromise;
+
     // XÓA VÉ HẾT HẠN
     await pool.request().query(`
   DELETE FROM ParkingReservation
@@ -25,28 +33,37 @@ router.post("/", auth, async (req, res) => {
       .request()
       .input("parking_lot_id", parking_lot_id)
       .input("spot_number", spot_number).query(`
-        SELECT 1 FROM ParkingReservation
-        WHERE parking_lot_id=@parking_lot_id
-        AND spot_number=@spot_number
-        AND status IN ('PENDING','PAID')
-      `);
+    SELECT 1
+    FROM ParkingReservation
+    WHERE parking_lot_id = @parking_lot_id
+      AND spot_number = @spot_number
+      AND status IN ('PENDING','PAID','PARKING')
+  `);
 
     if (check.recordset.length) {
       return res.status(400).json({ msg: "Chỗ đã được đặt" });
     }
 
     const ticket = "TICKET-" + uuidv4().slice(0, 8);
-
+    const startTimeSQL = start_time.replace("T", " ");
+    const endTimeSQL = end_time.replace("T", " ");
     await pool
       .request()
       .input("ticket", ticket)
       .input("parking_lot_id", parking_lot_id)
-      .input("spot_number", spot_number).query(`
-        INSERT INTO ParkingReservation
-        (ticket, parking_lot_id, spot_number, status, expired_at)
-        VALUES (@ticket, @parking_lot_id, @spot_number, 'PENDING',
-                DATEADD(MINUTE, 10, GETDATE()))
-      `);
+      .input("spot_number", spot_number)
+      .input("start_time", startTimeSQL)
+      .input("end_time", endTimeSQL)
+      .input("hours", hours).query(`
+    INSERT INTO ParkingReservation
+    (ticket, parking_lot_id, spot_number,
+     start_time, end_time, hours,
+     status, expired_at)
+    VALUES
+    (@ticket, @parking_lot_id, @spot_number,
+     @start_time, @end_time, @hours,
+     'PENDING', DATEADD(MINUTE, 10, GETDATE()))
+  `);
 
     req.app.get("io")?.emit("spot-updated", {
       parking_lot_id,
