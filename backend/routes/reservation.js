@@ -66,6 +66,11 @@ router.post("/", auth, async (req, res) => {
      @start_time, @end_time, @hours,
      'PENDING', DATEADD(MINUTE, 10, GETDATE()))
   `);
+    await pool.request().input("id", parking_lot_id).query(`
+    UPDATE ParkingLot
+    SET available_spots = available_spots - 1
+    WHERE id = @id
+  `);
 
     req.app.get("io")?.emit("spot-updated", {
       parking_lot_id,
@@ -81,7 +86,7 @@ router.post("/", auth, async (req, res) => {
 });
 
 // HUỶ ĐẶT CHỖ SAU KHI THANH TOÁN
-router.post("/cancel", async (req, res) => {
+router.post("/cancel", auth, async (req, res) => {
   const { parking_lot_id, spot_number } = req.body;
 
   if (!parking_lot_id || !spot_number) {
@@ -121,6 +126,11 @@ router.post("/cancel", async (req, res) => {
         WHERE parking_lot_id = @parking_lot_id
           AND spot_number = @spot_number
       `);
+    await pool.request().input("id", parking_lot_id).query(`
+    UPDATE ParkingLot
+    SET available_spots = available_spots + 1
+    WHERE id = @id
+  `);
 
     // realtime
     const io = req.app.get("io");

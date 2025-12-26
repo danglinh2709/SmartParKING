@@ -1,28 +1,32 @@
 module.exports = async function expireParking(io, pool) {
-  // console.log("⏳ expireParking job tick");
   try {
-    const expired = await pool.request().query(`
-      SELECT ticket, parking_lot_id, spot_number
-      FROM ParkingReservation
-      WHERE status = 'PARKING'
-        AND parking_expired_at < GETDATE()
+    const rs = await pool.request().query(`
+      DELETE FROM ParkingReservation
+      OUTPUT deleted.parking_lot_id
+      WHERE end_time <= DATEADD(MINUTE, -1, GETDATE())
+        AND status IN ('PAID','PARKING')
     `);
 
-    if (!expired.recordset.length) return;
+    if (!rs.recordset.length) return;
 
-    await pool.request().query(`
-      UPDATE ParkingReservation
-      SET status = 'EXPIRED'
-      WHERE status = 'PARKING'
-        AND parking_expired_at < GETDATE()
-    `);
-
-    if (io) {
-      io.emit("spot-freed", expired.recordset);
+    // Gom theo parking_lot_id
+    const counter = {};
+    for (const r of rs.recordset) {
+      counter[r.parking_lot_id] = (counter[r.parking_lot_id] || 0) + 1;
     }
 
-    console.log("🚗 Hết giờ đỗ, giải phóng:", expired.recordset);
+    // Update chính xác
+    for (const lotId in counter) {
+      await pool.request().input("id", lotId).input("n", counter[lotId]).query(`
+          UPDATE ParkingLot
+          SET available_spots = available_spots + @n
+          WHERE id = @id
+        `);
+    }
+
+    io?.emit("spot-freed", rs.recordset);
+    console.log("🟢 Đã giải phóng & cập nhật bãi xe");
   } catch (err) {
-    console.error("❌ expireParking job error:", err);
+    console.error("❌ expireParking error:", err);
   }
 };

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quản lý bãi đỗ</title>
+    <link rel="stylesheet" href="manager.css" />
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>Quản Lý SmartParking</h2>
+      <a class="active" href="dashboard.html">Dashboard</a>
+      <a href="parking-lots.html">Bãi đỗ</a>
+      <a href="staff.html">Nhân viên</a>
+      <a href="assign-staff.html">Phân công</a>
+      <a href="contact-messages.html">Tin nhắn khách hàng</a>
+    </div>
+
+    <div class="main">
+      <div class="header">
+        <h1>🏢 Danh sách bãi đỗ</h1>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Tên bãi</th>
+            <th>Tổng chỗ</th>
+            <th>Số lượt chưa đỗ</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody id="parkingTable">
+          <!-- JS render -->
+        </tbody>
+      </table>
+    </div>
+
+    <script src="manager.js"></script>
+    <script src="parking-lots.js"></script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Phân công</title>
+    <link rel="stylesheet" href="manager.css" />
+    <link rel="stylesheet" href="assign-staff.css" />
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>Quản Lý SmartParking</h2>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="parking-lots.html">Bãi đỗ</a>
+      <a href="staff.html">Nhân viên</a>
+      <a href="assign-staff.html">Phân công</a>
+      <a href="contact-messages.html">Tin nhắn khách hàng</a>
+    </div>
+
+    <div class="main">
+      <h1>🔁 Phân công nhân viên</h1>
+
+      <div class="form-box">
+        <!-- BÃI ĐỖ -->
+        <label>Bãi đỗ</label>
+        <div class="dropdown">
+          <input
+            type="text"
+            id="parkingInput"
+            placeholder="Chọn hoặc nhập bãi đỗ..."
+          />
+          <div class="dropdown-list" id="parkingList"></div>
+        </div>
+
+        <!-- NHÂN VIÊN -->
+        <label>Nhân viên</label>
+        <div class="dropdown">
+          <input
+            type="text"
+            id="staffInput"
+            placeholder="Chọn hoặc nhập nhân viên..."
+          />
+          <div class="dropdown-list" id="staffList"></div>
+        </div>
+
+        <button id="assignBtn" class="primary">Phân công</button>
+      </div>
+
+      <!-- DANH SÁCH PHÂN CÔNG -->
+      <div class="assignments">
+        <h2>📋 Danh sách phân công hiện tại</h2>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Nhân viên</th>
+              <th>Bãi đỗ</th>
+              <th>Access Code</th>
+              <th>Thời gian</th>
+              <th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody id="assignmentTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <script src="manager.js"></script>
+    <script src="assign-staff.js"></script>
+  </body>
+</html>

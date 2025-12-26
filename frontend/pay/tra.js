@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /* ================= LOGIN CHECK ================= */
   const token = localStorage.getItem("sp_token");
   if (!token) {
-    alert("🔒 Vui lòng đăng nhập để thanh toán");
+    alert(" Vui lòng đăng nhập để thanh toán");
     window.location.href = "/frontend/login/dangnhap.html";
     return;
   }
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", () => {
         },
         body: JSON.stringify({
           ticket,
-          hours: Number(hours), // ✅ BẮT BUỘC
+          hours: Number(hours),
         }),
       });
 
@@ -103,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      alert("✅ Thanh toán thành công, xe đang được gửi!");
+      alert("Thanh toán thành công!");
 
       window.location.href = `/frontend/ticket/ticket.html?ticket=${ticket}`;
     } catch (err) {
@@ -122,6 +122,6 @@ socket.on("parking-expiring", (list) => {
   const found = list.find((s) => s.ticket === myTicket);
 
   if (found) {
-    alert("⏰ Vé gửi xe sắp hết hạn! Bạn nên gia hạn.");
+    alert(" Vé gửi xe sắp hết hạn! Bạn nên gia hạn.");
   }
 });

@@ -26,11 +26,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("parkingName").textContent = data.parking_name;
     document.getElementById("spotNumber").textContent = data.spot_number;
     document.getElementById("startTime").textContent = formatTime(
-      data.created_at
+      data.start_time
     );
-    document.getElementById("endTime").textContent = formatTime(
-      data.expired_at
-    );
+    document.getElementById("endTime").textContent = formatTime(data.end_time);
 
     /* ====== ĐÁNH DẤU ĐÃ LOAD XONG ====== */
     ticketLoaded = true; // ✅ DÒNG QUAN TRỌNG
@@ -57,7 +55,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 /* ====== FORMAT TIME ====== */
 function formatTime(time) {
-  return new Date(time).toLocaleString("vi-VN");
+  if (!time) return "—";
+
+  // SQL datetime -> ISO datetime
+  const isoTime = time.replace(" ", "T");
+
+  const d = new Date(isoTime);
+  if (isNaN(d.getTime())) return "—";
+
+  return d.toLocaleString("vi-VN");
 }
 
 /* ====== LƯU VÉ ====== */

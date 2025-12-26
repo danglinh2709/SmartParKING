@@ -46,9 +46,11 @@ document.addEventListener("DOMContentLoaded", () => {
         toast("Đăng nhập thành công");
 
         if (data.role === "tenant") {
-          location.href = "../pay/pay.html";
+          location.href = "/frontend/pay/pay.html";
         } else if (data.role === "staff") {
-          location.href = "chonbaido.html";
+          location.href = "/frontend/login/chonbaido.html";
+        } else if (data.role === "manager") {
+          location.href = "/frontend/manager/dashboard.html";
         }
       } catch (err) {
         $("loginPwdErr").textContent = "Không kết nối được server";
@@ -90,8 +92,13 @@ document.addEventListener("DOMContentLoaded", () => {
           return;
         }
 
-        toast("Đăng ký thành công");
-        location.href = "dangnhap.html";
+        toast("Đăng ký thành công. Vui lòng nhập mã xác thực");
+
+        // LƯU EMAIL ĐỂ VERIFY
+        localStorage.setItem("verify_email", $("email").value.trim());
+
+        // 👉 CHUYỂN SANG VERIFY
+        location.href = "verify.html";
       } catch (err) {
         $("emailErr").textContent = "Không kết nối được server";
       }

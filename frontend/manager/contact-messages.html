@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Tin nhắn khách hàng</title>
+    <link rel="stylesheet" href="manager.css" />
+    <link rel="stylesheet" href="contact-messages.css" />
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>Quản Lý SmartParking</h2>
+      <a href="dashboard.html">Dashboard</a>
+      <a href="parking-lots.html">Bãi đỗ</a>
+      <a href="staff.html">Nhân viên</a>
+      <a href="assign-staff.html">Phân công</a>
+      <a href="contact-messages.html">Tin nhắn khách hàng</a>
+    </div>
+
+    <div class="main">
+      <div class="header">
+        <h1>📩 Tin nhắn khách hàng</h1>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Họ tên</th>
+            <th>Email</th>
+            <th>Chủ đề</th>
+            <th>Thời gian</th>
+            <th>Trạng thái</th>
+            <th>Xem</th>
+          </tr>
+        </thead>
+        <tbody id="messageTable">
+          <!-- JS render -->
+        </tbody>
+      </table>
+    </div>
+
+    <script src="manager.js"></script>
+    <script src="contact-messages.js"></script>
+  </body>
+</html>

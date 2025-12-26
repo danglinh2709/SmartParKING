@@ -56,7 +56,7 @@ const expireParking = require("./jobs/expireParking");
     } catch (err) {
       console.error("❌ expireParking error:", err);
     }
-  }, 60 * 1000);
+  }, 30 * 1000);
 })();
 
 // ===== START SERVER =====

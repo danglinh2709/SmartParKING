@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Nhân viên</title>
+    <link rel="stylesheet" href="manager.css" />
+    <link rel="stylesheet" href="staff.css" />
+  </head>
+  <body>
+    <div class="sidebar">
+      <h2>Quản Lý SmartParking</h2>
+      <a class="active" href="dashboard.html">Dashboard</a>
+      <a href="parking-lots.html">Bãi đỗ</a>
+      <a href="staff.html">Nhân viên</a>
+      <a href="assign-staff.html">Phân công</a>
+      <a href="contact-messages.html">Tin nhắn khách hàng</a>
+    </div>
+    <div class="main">
+      <div class="header">
+        <h1>👷 Danh sách nhân viên</h1>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Tên</th>
+            <th>Email</th>
+            <th>Bãi đang làm</th>
+            <th>Trạng thái</th>
+          </tr>
+        </thead>
+        <tbody id="staffTable">
+          <!-- JS render -->
+        </tbody>
+      </table>
+    </div>
+
+    <script src="manager.js"></script>
+    <script src="staff.js"></script>
+  </body>
+</html>
