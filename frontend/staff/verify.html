@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <title>Staff | Xác nhận vé</title>
     <link rel="stylesheet" href="verify.css" />
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
   </head>
 
   <body>
@@ -19,39 +20,57 @@
     <main class="dashboard">
       <!-- LEFT -->
       <section class="left">
-        <!-- TICKET -->
         <div class="card">
           <h3>🎫 Quét / nhập vé</h3>
-          <div class="input-group">
-            <input id="ticketInput" placeholder="TICKET-xxxx" />
-            <button onclick="verifyTicket()">Xác nhận</button>
+
+          <!-- PREVIEW: CHỈ HIỂN THỊ MÃ VÉ
+          <div id="ticketPreview" class="ticket-preview">—</div> -->
+
+          <!-- INPUT -->
+          <div class="ticket-box">
+            <input
+              id="ticketInput"
+              placeholder="📄 Mã vé (TICKET-xxxx)"
+              autocomplete="off"
+            />
+
+            <div class="ticket-actions">
+              <button class="btn primary" id="verifyBtn">Xác nhận</button>
+              <button class="btn qr" id="qrBtn">📷 Quét QR</button>
+            </div>
           </div>
 
-          <div id="ticketInfo" class="ticket-info">
-            <span class="badge gray">Chưa xác nhận</span>
+          <!-- KẾT QUẢ VERIFY -->
+          <div id="ticketInfo" class="ticket-card">
+            <div class="ticket-status pending">
+              ⏳ Vui lòng bấm “Xác nhận” để kiểm tra vé
+            </div>
           </div>
         </div>
-
-        <!-- CAMERA -->
         <div class="card">
-          <h3>📷 Camera nhận diện xe</h3>
+          <h3>📷 Camera quét QR</h3>
           <video id="cam" autoplay></video>
           <canvas id="snapshot" hidden></canvas>
+        </div>
+
+        <div class="card highlight">
+          <button class="confirm" id="confirmBtn">CHO XE VÀO BÃI</button>
         </div>
       </section>
 
       <!-- RIGHT -->
       <section class="right">
-        <div class="card highlight">
-          <h3>Cho xe vào bãi</h3>
-          <button class="confirm" onclick="confirmEntry()">
-            CHO XE VÀO BÃI
-          </button>
+        <div class="card">
+          <h3>📷 Camera biển số trước</h3>
+          <video id="camFront" autoplay></video>
+        </div>
+
+        <div class="card">
+          <h3>📷 Camera biển số sau</h3>
+          <video id="camBack" autoplay></video>
         </div>
       </section>
     </main>
-
-    <div id="toast"></div>
 
     <script src="verify.js"></script>
   </body>

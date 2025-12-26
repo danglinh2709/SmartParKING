@@ -25,8 +25,8 @@ module.exports = async function expireParking(io, pool) {
     }
 
     io?.emit("spot-freed", rs.recordset);
-    console.log("🟢 Đã giải phóng & cập nhật bãi xe");
+    console.log("Đã giải phóng & cập nhật bãi xe");
   } catch (err) {
-    console.error("❌ expireParking error:", err);
+    console.error(" expireParking error:", err);
   }
 };

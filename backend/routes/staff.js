@@ -48,56 +48,39 @@ router.post("/verify-access", auth, async (req, res) => {
 router.post("/verify-ticket", auth, async (req, res) => {
   const { ticket, parking_lot_id } = req.body;
 
+  if (!ticket || !parking_lot_id) {
+    return res.status(400).json({ msg: "Thiếu dữ liệu" });
+  }
+
   const pool = await poolPromise;
+
   const result = await pool
     .request()
     .input("ticket", ticket)
     .input("parking_lot_id", parking_lot_id).query(`
-      SELECT *
-      FROM ParkingReservation
-      WHERE ticket_code = @ticket
-        AND parking_lot_id = @parking_lot_id
-        AND status = 'PAID'
-        AND used = 0
+      SELECT 
+        pr.ticket,
+        pr.spot_number,
+        pr.start_time,
+        pr.end_time,
+        pl.name AS parking_name
+      FROM ParkingReservation pr
+      JOIN ParkingLot pl ON pl.id = pr.parking_lot_id
+      WHERE pr.ticket = @ticket
+        AND pr.parking_lot_id = @parking_lot_id
+        AND pr.status = 'PAID'
+        AND (pr.used = 0 OR pr.used IS NULL)
+        AND DATEADD(HOUR,7,GETUTCDATE())
+            BETWEEN pr.start_time AND pr.end_time
     `);
 
   if (!result.recordset.length) {
-    return res
-      .status(400)
-      .json({ msg: "Vé không hợp lệ hoặc đã được sử dụng" });
+    return res.status(400).json({
+      msg: "Vé không hợp lệ hoặc ngoài thời gian gửi",
+    });
   }
 
   res.json(result.recordset[0]);
-});
-
-/* ================== XE VÀO BÃI ================== */
-router.post("/vehicle-entry", auth, async (req, res) => {
-  const { reservation_id, image_base64 } = req.body;
-
-  const pool = await poolPromise;
-
-  // kiểm tra vé
-  const check = await pool.request().input("id", reservation_id).query(`
-      SELECT *
-      FROM ParkingReservation
-      WHERE id=@id AND status='PAID'
-    `);
-
-  if (!check.recordset.length) {
-    return res.status(400).json({ msg: "Vé không hợp lệ" });
-  }
-
-  // cập nhật vé → đang sử dụng
-  await pool.request().input("id", reservation_id).input("image", image_base64)
-    .query(`
-      UPDATE ParkingReservation
-      SET status='IN_USE',
-          entry_time=GETDATE(),
-          entry_image=@image
-      WHERE id=@id
-    `);
-
-  res.json({ msg: "Xe đã vào bãi" });
 });
 
 module.exports = router;
