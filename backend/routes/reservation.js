@@ -8,13 +8,15 @@ const auth = require("../middlewares/auth");
 router.post("/", auth, async (req, res) => {
   const { parking_lot_id, spot_number, start_time, end_time, hours } = req.body;
 
+  const hoursNum = parseInt(hours, 10);
+
   if (
     !parking_lot_id ||
     !spot_number ||
     !start_time ||
     !end_time ||
-    !Number.isInteger(hours) ||
-    hours <= 0
+    !Number.isInteger(hoursNum) ||
+    hoursNum <= 0
   ) {
     return res.status(400).json({ msg: "Dữ liệu đặt chỗ không hợp lệ" });
   }
@@ -54,7 +56,7 @@ router.post("/", auth, async (req, res) => {
       .input("spot_number", spot_number)
       .input("start_time", startTimeSQL)
       .input("end_time", endTimeSQL)
-      .input("hours", hours).query(`
+      .input("hours", hoursNum).query(`
     INSERT INTO ParkingReservation
     (ticket, parking_lot_id, spot_number,
      start_time, end_time, hours,
