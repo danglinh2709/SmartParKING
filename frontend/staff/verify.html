@@ -8,7 +8,6 @@
   </head>
 
   <body>
-    <!-- HEADER -->
     <header class="topbar">
       <div class="logo">🚗 SmartParking</div>
       <div class="user">
@@ -23,10 +22,6 @@
         <div class="card">
           <h3>🎫 Quét / nhập vé</h3>
 
-          <!-- PREVIEW: CHỈ HIỂN THỊ MÃ VÉ
-          <div id="ticketPreview" class="ticket-preview">—</div> -->
-
-          <!-- INPUT -->
           <div class="ticket-box">
             <input
               id="ticketInput"
@@ -40,21 +35,21 @@
             </div>
           </div>
 
-          <!-- KẾT QUẢ VERIFY -->
           <div id="ticketInfo" class="ticket-card">
-            <div class="ticket-status pending">
-              ⏳ Vui lòng bấm “Xác nhận” để kiểm tra vé
-            </div>
+            <div class="ticket-status pending">⏳ Vui lòng bấm “Xác nhận”</div>
           </div>
         </div>
+
         <div class="card">
           <h3>📷 Camera quét QR</h3>
-          <video id="cam" autoplay></video>
-          <canvas id="snapshot" hidden></canvas>
+          <video id="camQR" autoplay></video>
+          <canvas id="qrCanvas" hidden></canvas>
         </div>
 
         <div class="card highlight">
-          <button class="confirm" id="confirmBtn">CHO XE VÀO BÃI</button>
+          <button class="confirm" id="confirmBtn" disabled>
+            CHO XE VÀO BÃI
+          </button>
         </div>
       </section>
 
@@ -63,11 +58,13 @@
         <div class="card">
           <h3>📷 Camera biển số trước</h3>
           <video id="camFront" autoplay></video>
+          <canvas id="canvasFront" hidden></canvas>
         </div>
 
         <div class="card">
           <h3>📷 Camera biển số sau</h3>
           <video id="camBack" autoplay></video>
+          <canvas id="canvasBack" hidden></canvas>
         </div>
       </section>
     </main>

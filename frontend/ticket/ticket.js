@@ -24,6 +24,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     /* ====== ĐỔ DỮ LIỆU RA HTML ====== */
     document.getElementById("ticketCode").textContent = data.ticket;
     document.getElementById("parkingName").textContent = data.parking_name;
+    document.getElementById("licensePlate").textContent =
+      data.license_plate || "—";
     document.getElementById("spotNumber").textContent = data.spot_number;
     document.getElementById("startTime").textContent = formatTime(
       data.start_time
@@ -37,6 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const qrText = `
       Mã vé: ${data.ticket}
       Bãi xe: ${data.parking_name}
+      Biển số: ${data.license_plate}
       Vị trí: ${data.spot_number}
       Vào: ${formatTime(data.created_at)}
       Hết hạn: ${formatTime(data.expired_at)}

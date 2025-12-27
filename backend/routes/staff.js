@@ -2,6 +2,9 @@ const express = require("express");
 const router = express.Router();
 const poolPromise = require("../models/db");
 const auth = require("../middlewares/auth");
+const { recognizePlateFromImage } = require("../services/plate.service");
+const { normalizePlate } = require("../utils/plate.util");
+const { saveBase64Image } = require("../utils/image.util");
 
 /* ================== LẤY BÃI STAFF QUẢN LÝ ================== */
 router.get("/parking-lots", auth, async (req, res) => {
@@ -60,6 +63,7 @@ router.post("/verify-ticket", auth, async (req, res) => {
     .input("parking_lot_id", parking_lot_id).query(`
       SELECT 
         pr.ticket,
+        pr.license_plate,   
         pr.spot_number,
         pr.start_time,
         pr.end_time,

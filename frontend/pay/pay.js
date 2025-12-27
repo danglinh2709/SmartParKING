@@ -225,12 +225,12 @@ async function confirmReserveInfo() {
 
   const token = localStorage.getItem("sp_token"); // ✅ BẮT BUỘC
 
-  const plate = document.getElementById("plateInput").value.trim();
+  const license_plate  = document.getElementById("plateInput").value.trim();
   const phone = document.getElementById("phoneInput").value.trim();
   const startTime = document.getElementById("startTimeInput").value;
   const endTime = document.getElementById("endTimeInput").value;
 
-  if (!plate || !phone || !startTime || !endTime) {
+  if (!license_plate || !phone || !startTime || !endTime) {
     alert("Vui lòng nhập đầy đủ thông tin");
     return;
   }
@@ -253,6 +253,7 @@ async function confirmReserveInfo() {
       start_time: startTime,
       end_time: endTime,
       hours,
+      license_plate,
     }),
   });
 

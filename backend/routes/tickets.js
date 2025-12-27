@@ -4,7 +4,7 @@ const poolPromise = require("../models/db");
 
 /* ================== XÁC THỰC VÉ ================== */
 router.post("/verify", async (req, res) => {
-  const { ticket } = req.body;
+  const { ticket, license_plate } = req.body;
 
   if (!ticket) {
     return res.status(400).json({ msg: "Thiếu ticket" });
@@ -14,17 +14,28 @@ router.post("/verify", async (req, res) => {
     const pool = await poolPromise;
 
     const result = await pool.request().input("ticket", ticket).query(`
-  SELECT status, parking_expired_at
-  FROM ParkingReservation
-  WHERE ticket = @ticket
-`);
+        SELECT status, parking_expired_at, license_plate
+        FROM ParkingReservation
+        WHERE ticket = @ticket
+      `);
 
-    const { status, parking_expired_at } = result.recordset[0];
+    // ✅ CHECK TỒN TẠI
+    if (!result.recordset.length) {
+      return res.status(404).json({ msg: "❌ Vé không tồn tại" });
+    }
 
+    const {
+      status,
+      parking_expired_at,
+      license_plate: dbPlate,
+    } = result.recordset[0];
+
+    // ✅ CHECK THANH TOÁN
     if (status === "PENDING") {
       return res.status(400).json({ msg: "❌ Vé chưa thanh toán" });
     }
 
+    // ✅ CHECK HẾT HẠN
     if (
       status === "EXPIRED" ||
       (parking_expired_at && new Date(parking_expired_at) < new Date())
@@ -32,7 +43,17 @@ router.post("/verify", async (req, res) => {
       return res.status(400).json({ msg: "❌ Vé đã hết hạn" });
     }
 
-    res.json({ msg: "✅ Vé hợp lệ", status });
+    // ✅ CHECK ĐÚNG XE
+    if (license_plate && license_plate !== dbPlate) {
+      return res.status(400).json({
+        msg: "❌ Biển số xe không khớp với vé",
+      });
+    }
+
+    res.json({
+      msg: "✅ Vé hợp lệ",
+      status,
+    });
   } catch (err) {
     console.error("VERIFY ERROR:", err);
     res.status(500).json({ msg: "Lỗi server" });
@@ -50,6 +71,7 @@ router.get("/:ticket", async (req, res) => {
   SELECT 
     pr.ticket,
     pr.spot_number,
+     pr.license_plate, 
     CONVERT(varchar, pr.start_time, 126) AS start_time,
   CONVERT(varchar, pr.end_time, 126)   AS end_time,
       

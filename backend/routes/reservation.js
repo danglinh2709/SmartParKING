@@ -6,7 +6,14 @@ const auth = require("../middlewares/auth");
 
 // ================== ĐẶT CHỖ ==================
 router.post("/", auth, async (req, res) => {
-  const { parking_lot_id, spot_number, start_time, end_time, hours } = req.body;
+  const {
+    parking_lot_id,
+    spot_number,
+    start_time,
+    end_time,
+    hours,
+    license_plate,
+  } = req.body;
 
   const hoursNum = parseInt(hours, 10);
 
@@ -19,6 +26,9 @@ router.post("/", auth, async (req, res) => {
     hoursNum <= 0
   ) {
     return res.status(400).json({ msg: "Dữ liệu đặt chỗ không hợp lệ" });
+  }
+  if (!license_plate) {
+    return res.status(400).json({ msg: "Thiếu biển số xe" });
   }
 
   try {
@@ -54,15 +64,16 @@ router.post("/", auth, async (req, res) => {
       .input("ticket", ticket)
       .input("parking_lot_id", parking_lot_id)
       .input("spot_number", spot_number)
+      .input("license_plate", license_plate)
       .input("start_time", startTimeSQL)
       .input("end_time", endTimeSQL)
       .input("hours", hoursNum).query(`
     INSERT INTO ParkingReservation
-    (ticket, parking_lot_id, spot_number,
+    (ticket, parking_lot_id, spot_number, license_plate,
      start_time, end_time, hours,
      status, expired_at)
     VALUES
-    (@ticket, @parking_lot_id, @spot_number,
+    (@ticket, @parking_lot_id, @spot_number, @license_plate,
      @start_time, @end_time, @hours,
      'PENDING', DATEADD(MINUTE, 10, GETDATE()))
   `);
